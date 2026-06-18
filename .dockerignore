@@ -1,0 +1,16 @@
+node_modules
+dist
+logs
+*.db
+database.sqlite
+.git
+.github
+.vscode
+.env
+Dockerfile
+docker-compose.yml
+kubernetes
+nginx
+scripts
+monitoring
+docs

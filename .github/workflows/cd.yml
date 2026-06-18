@@ -1,0 +1,31 @@
+name: FameHub CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["FameHub CI Pipeline"]
+    types:
+      - completed
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd /opt/famehub
+            # Pull latest changes from git
+            git pull origin main
+            # Restart docker containers with updated configurations
+            docker compose down
+            docker compose up -d --build
+            # Verify status
+            docker compose ps

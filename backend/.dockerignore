@@ -1,0 +1,8 @@
+node_modules
+logs
+*.db
+database.sqlite
+.git
+.env
+Dockerfile
+tests
