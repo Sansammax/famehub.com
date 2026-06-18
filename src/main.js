@@ -18,7 +18,7 @@ const routes = {
 
 function navigate(route, data = null) {
   state.currentRoute = route;
-  if(data) state.pageData = data;
+  if (data) state.pageData = data;
   renderApp();
 }
 
@@ -27,7 +27,7 @@ window.navigate = navigate;
 // Reusable Components
 const Sidebar = (role) => {
   const getNavItems = () => {
-    switch(role) {
+    switch (role) {
       case 'admin':
         return `
           <div class="nav-item">
@@ -89,7 +89,7 @@ const Sidebar = (role) => {
   return `
     <aside class="sidebar">
       <div class="sidebar-brand">
-        <i class="bi bi-mortarboard-fill"></i> SmartLive
+        <i class="bi bi-mortarboard-fill"></i> FameHub
       </div>
       <nav class="sidebar-nav">
         ${getNavItems()}
@@ -120,7 +120,7 @@ const Topbar = (title) => `
         <img src="https://ui-avatars.com/api/?name=${state.user.role}&background=4f46e5&color=fff" alt="Profile" class="avatar">
         <div class="d-none d-md-block">
           <div class="fw-semibold text-capitalize">${state.user.role} User</div>
-          <div class="text-muted" style="font-size: 0.75rem;">${state.user.role}@smartlive.edu</div>
+          <div class="text-muted" style="font-size: 0.75rem;">${state.user.role}@famehub.edu</div>
         </div>
       </div>
     </div>
@@ -148,7 +148,7 @@ function renderLogin() {
           <div class="text-primary mb-2">
             <i class="bi bi-mortarboard-fill" style="font-size: 3rem;"></i>
           </div>
-          <h1 class="text-h1">Smart Live LMS</h1>
+          <h1 class="text-h1">FameHub</h1>
           <p class="text-muted">Virtual Classroom Platform</p>
         </div>
         <form onsubmit="handleLogin(event)">
@@ -156,7 +156,7 @@ function renderLogin() {
             <label class="form-label fw-semibold">Email</label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope"></i></span>
-              <input type="email" class="form-control border-start-0 ps-0" id="email" value="admin@smartlive.edu" required>
+              <input type="email" class="form-control border-start-0 ps-0" id="email" value="admin@famehub.edu" required>
             </div>
           </div>
           <div class="mb-4">
@@ -347,7 +347,7 @@ function renderTeacherDashboard() {
             <div class="mt-auto">
               <div class="bg-white bg-opacity-25 rounded p-3 d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="fw-semibold text-white">Advanced Mathematics 101</div>
+                  <div class="fw-semibold text-white">Advanced Java 101</div>
                   <div class="small opacity-75"><i class="bi bi-clock"></i> 10:00 AM - 11:30 AM</div>
                 </div>
                 <button class="btn btn-light fw-bold px-4" onclick="navigate('live')">Start Class <i class="bi bi-play-fill"></i></button>
@@ -378,7 +378,7 @@ function renderTeacherDashboard() {
 
     <h4 class="fw-bold mb-3 mt-5">Recent Submissions</h4>
     <div class="row g-4">
-      ${[1,2,3].map(i => \`
+      ${[1, 2, 3].map(i => `
         <div class="col-md-4">
           <div class="card border-0">
             <div class="card-body p-4">
@@ -392,7 +392,7 @@ function renderTeacherDashboard() {
             </div>
           </div>
         </div>
-      \`).join('')}
+      `).join('')}
     </div>
   `, 'Teacher Dashboard');
 }
@@ -420,7 +420,7 @@ function renderStudentDashboard() {
           <a href="#" class="text-primary text-decoration-none fw-semibold">View All</a>
         </div>
         <div class="row g-3">
-          ${['Computer Science 101', 'UI/UX Design Basics'].map(course => \`
+          ${['Computer Science 101', 'UI/UX Design Basics'].map(course => `
             <div class="col-md-6">
               <div class="card border-0 h-100">
                 <div class="card-body p-4">
@@ -445,7 +445,7 @@ function renderStudentDashboard() {
                 </div>
               </div>
             </div>
-          \`).join('')}
+          `).join('')}
         </div>
       </div>
       <div class="col-lg-4">
@@ -500,12 +500,12 @@ function renderLiveClassroom() {
         </div>
         
         <div class="bg-dark rounded-3 p-3 overflow-auto" style="height: 140px; display: flex; gap: 10px;">
-          ${[1,2,3,4,5].map(i => \`
-            <div class="video-tile" style="min-width: 160px; height: 100%; border: 2px solid ${i===1 ? 'var(--primary)' : 'transparent'}">
-              <img src="https://i.pravatar.cc/150?img=${i+10}" class="w-100 h-100 object-fit-cover">
-              <span class="user-name">${i===1 ? 'You' : 'Student ' + i}</span>
+          ${[1, 2, 3, 4, 5].map(i => `
+            <div class="video-tile" style="min-width: 160px; height: 100%; border: 2px solid ${i === 1 ? 'var(--primary)' : 'transparent'}">
+              <img src="https://i.pravatar.cc/150?img=${i + 10}" class="w-100 h-100 object-fit-cover">
+              <span class="user-name">${i === 1 ? 'You' : 'Student ' + i}</span>
             </div>
-          \`).join('')}
+          `).join('')}
         </div>
 
         <div class="control-bar shadow">
@@ -531,7 +531,7 @@ function renderLiveClassroom() {
             <div class="d-flex align-items-end gap-2">
               <img src="https://i.pravatar.cc/150?img=12" class="rounded-circle" width="28" height="28">
               <div>
-                <div class="message-sender">Prof. Davis <span class="badge bg-primary ms-1" style="font-size: 0.6rem;">Host</span></div>
+                <div class="message-sender">Prof. san <span class="badge bg-primary ms-1" style="font-size: 0.6rem;">Host</span></div>
                 <div class="message-bubble">Welcome everyone! Please mute your mics until we start the Q&A session.</div>
               </div>
             </div>
@@ -540,7 +540,7 @@ function renderLiveClassroom() {
              <div class="d-flex align-items-end gap-2">
               <img src="https://i.pravatar.cc/150?img=4" class="rounded-circle" width="28" height="28">
               <div>
-                <div class="message-sender">Alex Chen</div>
+                <div class="message-sender">priyanga</div>
                 <div class="message-bubble">Loud and clear!</div>
               </div>
             </div>
@@ -709,12 +709,12 @@ function renderAnalytics() {
             </div>
             <!-- Dummy Chart via CSS for pure Vanilla JS without Chart.js -->
             <div class="d-flex align-items-end justify-content-between h-50 mt-5 pt-5 pb-2 border-bottom" style="gap: 10px;">
-              ${[40, 60, 45, 80, 65, 90, 75].map((h, i) => \`
+              ${[40, 60, 45, 80, 65, 90, 75].map((h, i) => `
                 <div class="d-flex flex-column align-items-center w-100">
                   <div class="w-100 bg-primary rounded-top" style="height: ${h}px; transition: height 1s ease-out;" data-bs-toggle="tooltip" title="${h} Active Users"></div>
-                  <div class="small text-muted mt-2">Day ${i+1}</div>
+                  <div class="small text-muted mt-2">Day ${i + 1}</div>
                 </div>
-              \`).join('')}
+              `).join('')}
             </div>
           </div>
         </div>
@@ -755,7 +755,7 @@ function renderAnalytics() {
 function renderApp() {
   const appContainer = document.getElementById('app');
   appContainer.innerHTML = routes[state.currentRoute]();
-  
+
   // Re-initialize tooltips if needed
   if (typeof bootstrap !== 'undefined') {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
