@@ -81,6 +81,7 @@ function connectWebSocket() {
       else if (msg.type === 'AI_TYPING_START') handleAiTypingStart();
       else if (msg.type === 'AI_CHUNK') handleAiChunk(msg.content);
       else if (msg.type === 'AI_TYPING_STOP') handleAiTypingStop(msg.response, msg.error);
+      else if (msg.type === 'LIVE_MEETINGS_UPDATE') handleLiveMeetingsUpdate(msg.meetings);
     } catch (e) {}
   };
   socket.onclose = () => setTimeout(connectWebSocket, 4000);
@@ -118,6 +119,7 @@ const routes = {
   teacher: renderTeacherDashboard,
   student: renderStudentDashboard,
   live: renderLiveClassroom,
+  'create-live-class': renderCreateLiveClass,
   courses: renderCourses,
   assignments: renderAssignments,
   quizzes: renderQuizzes,
@@ -274,9 +276,9 @@ function renderLogin() {
       <div class="mt-4 p-3 rounded" style="background:var(--bg-color);font-size:0.8rem;">
         <div class="fw-600 mb-2">Demo Accounts</div>
         <div class="d-flex flex-column gap-1">
-          <a onclick="document.getElementById('login-email').value='admin@famehub.edu'" style="cursor:pointer;" class="text-primary">admin@famehub.edu</a>
-          <a onclick="document.getElementById('login-email').value='teacher@famehub.edu'" style="cursor:pointer;" class="text-success">teacher@famehub.edu</a>
-          <a onclick="document.getElementById('login-email').value='student@famehub.edu'" style="cursor:pointer;" class="text-warning">student@famehub.edu</a>
+          <a role="button" tabindex="0" onclick="document.getElementById('login-email').value='admin@famehub.edu'" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); document.getElementById('login-email').value='admin@famehub.edu'; }" style="cursor:pointer;" class="text-primary">admin@famehub.edu</a>
+          <a role="button" tabindex="0" onclick="document.getElementById('login-email').value='teacher@famehub.edu'" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); document.getElementById('login-email').value='teacher@famehub.edu'; }" style="cursor:pointer;" class="text-success">teacher@famehub.edu</a>
+          <a role="button" tabindex="0" onclick="document.getElementById('login-email').value='student@famehub.edu'" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); document.getElementById('login-email').value='student@famehub.edu'; }" style="cursor:pointer;" class="text-warning">student@famehub.edu</a>
         </div>
         <div class="text-muted mt-1">Password: <code>password</code></div>
       </div>
@@ -849,9 +851,8 @@ function renderLiveClassroom() {
   const role = state.user?.role;
   return Layout(role, 'Live Classroom', `
     <div class="d-flex gap-3 mb-4 flex-wrap">
-      <input type="text" id="meeting-name-input" class="form-control" style="max-width:320px;" placeholder="e.g. Advanced Math 101 - Lecture 5" value="Live Class Session">
       ${role === 'teacher' || role === 'admin'
-        ? `<button class="btn btn-primary" id="start-class-btn" onclick="startClass()"><i class="bi bi-camera-video me-1"></i>Start Class</button>`
+        ? `<button class="btn btn-primary" id="create-class-btn" onclick="navigate('create-live-class')"><i class="bi bi-plus-circle me-1"></i>Create Live Class</button>`
         : `<button class="btn btn-success" id="join-class-btn" onclick="openJoinModal()"><i class="bi bi-box-arrow-in-right me-1"></i>Join Class</button>`}
     </div>
     <div id="meetings-list">
@@ -914,6 +915,7 @@ async function bootstrapPage(route) {
     case 'analytics': await loadAnalytics(); break;
     case 'audit': await loadAuditLogs(); break;
     case 'live': await loadActiveMeetings(); await loadRecordings(); break;
+    case 'create-live-class': await loadCoursesForLiveSelect(); break;
   }
 }
 
@@ -1073,7 +1075,6 @@ async function loadStudentDashboard() {
 
     // Load actual enrolled courses & setup AI chat options
     const coursesRes = await apiRequest('/courses?studentId=' + state.user.id);
-    const coursesList = document.getElementById('student-courses-list');
     const courseContextDropdown = document.getElementById('ai-chat-course-context');
     if (coursesRes.courses && coursesRes.courses.length > 0) {
       if (coursesList) {
@@ -2060,14 +2061,20 @@ async function loadActiveMeetings() {
       container.innerHTML = EmptyState('bi-camera-video-off','No active sessions','Start a class to see it here.');
       return;
     }
-    container.innerHTML = state.activeMeetings.map(m => `
+    container.innerHTML = state.activeMeetings.map(m => {
+      const isTeacher = state.user?.role === 'teacher' || state.user?.role === 'admin';
+      return `
       <div class="d-flex align-items-center justify-content-between p-3 rounded mb-2" style="background:var(--bg-color);">
         <div>
           <div class="fw-600"><span class="text-danger me-2">●</span>${m.name}</div>
-          <div class="text-muted small">${m.meetingId} · Started ${new Date(m.startedAt).toLocaleTimeString()}</div>
+          <div class="text-muted small">${m.meetingId} · Started ${new Date(m.createdAt || m.startedAt).toLocaleTimeString()} · Participants: <strong class="text-primary">${m.participantCount || 0}</strong></div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="joinMeeting('${m.meetingId}','${m.name}')">Join</button>
-      </div>`).join('');
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary btn-sm" onclick="joinMeeting('${m.meetingId}','${m.name}')">Join</button>
+          ${isTeacher ? `<button class="btn btn-danger btn-sm" onclick="endMeeting('${m.meetingId}')">End</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
   } catch (err) { container.innerHTML = EmptyState('bi-camera-video','Ready','Start or join a live class.'); }
 }
 
@@ -2097,7 +2104,8 @@ async function startClass() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Starting...';
   try {
     const data = await apiRequest('/live/create', 'POST', { name });
-    const joinData = await apiRequest('/live/join', 'POST', { meetingId: data.meeting.meetingId, role: 'moderator' });
+    const fullName = (state.user ? `${state.user.firstName} ${state.user.lastName || ''}`.trim() : '') || 'Anonymous';
+    const joinData = await apiRequest('/live/join', 'POST', { meetingId: data.meeting.meetingId, fullName, role: 'moderator' });
     window.open(joinData.joinUrl, '_blank');
     await loadActiveMeetings();
   } catch (err) { showToast(err.message, 'error'); }
@@ -2124,12 +2132,168 @@ window.openJoinModal = openJoinModal;
 
 async function joinMeeting(meetingId, name) {
   try {
-    const data = await apiRequest('/live/join', 'POST', { meetingId, role: 'attendee' });
+    const fullName = (state.user ? `${state.user.firstName} ${state.user.lastName || ''}`.trim() : '') || 'Anonymous';
+    const role = (state.user?.role === 'teacher' || state.user?.role === 'admin') ? 'moderator' : 'attendee';
+    const data = await apiRequest('/live/join', 'POST', { meetingId, fullName, role });
     window.open(data.joinUrl, '_blank');
     bootstrap.Modal.getInstance(document.getElementById('join-modal'))?.hide();
   } catch (err) { showToast(err.message, 'error'); }
 }
 window.joinMeeting = joinMeeting;
+
+function renderCreateLiveClass() {
+  const role = state.user?.role;
+  return Layout(role, 'Create Live Class', `
+    <div class="card p-4 mx-auto animate-fade-in" style="max-width: 600px;">
+      <h5 class="card-title mb-4"><i class="bi bi-camera-video me-2 text-primary"></i>Schedule a Live Session</h5>
+      <form id="create-live-class-form" onsubmit="handleCreateLiveClass(event)">
+        <div class="mb-3">
+          <label for="live-course-select" class="form-label">Course</label>
+          <select id="live-course-select" class="form-select" required>
+            <option value="">Loading courses...</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="live-title-input" class="form-label">Meeting Title</label>
+          <input type="text" id="live-title-input" class="form-control" placeholder="e.g. Advanced Math 101 - Lecture 5" required>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="live-date-input" class="form-label">Date</label>
+            <input type="date" id="live-date-input" class="form-control" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="live-time-input" class="form-label">Time</label>
+            <input type="time" id="live-time-input" class="form-control" required>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="live-duration-input" class="form-label">Duration (minutes)</label>
+          <input type="number" id="live-duration-input" class="form-control" value="60" min="1" required>
+        </div>
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" id="live-record-checkbox" checked>
+          <label class="form-check-label" for="live-record-checkbox">
+            Record meeting
+          </label>
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+          <button type="button" class="btn btn-outline-secondary" onclick="navigate('live')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="schedule-btn">Schedule & Start</button>
+        </div>
+      </form>
+    </div>
+  `);
+}
+window.renderCreateLiveClass = renderCreateLiveClass;
+
+async function loadCoursesForLiveSelect() {
+  const select = document.getElementById('live-course-select');
+  if (!select) return;
+  try {
+    const role = state.user?.role;
+    const params = new URLSearchParams({ archived: 'false' });
+    if (role === 'student') params.append('studentId', state.user.id);
+    const data = await apiRequest(`/courses?${params}`);
+    
+    if (!data.courses || !data.courses.length) {
+      select.innerHTML = '<option value="">No courses available</option>';
+      return;
+    }
+    
+    select.innerHTML = '<option value="">Select a Course</option>' + 
+      data.courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+  } catch (err) {
+    select.innerHTML = `<option value="">Error loading courses: ${err.message}</option>`;
+  }
+}
+window.loadCoursesForLiveSelect = loadCoursesForLiveSelect;
+
+async function handleCreateLiveClass(event) {
+  event.preventDefault();
+  const courseId = document.getElementById('live-course-select').value;
+  const name = document.getElementById('live-title-input').value;
+  const date = document.getElementById('live-date-input').value;
+  const time = document.getElementById('live-time-input').value;
+  const duration = document.getElementById('live-duration-input').value;
+  const record = document.getElementById('live-record-checkbox').checked;
+
+  const scheduleBtn = document.getElementById('schedule-btn');
+  scheduleBtn.disabled = true;
+  scheduleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creating...';
+
+  try {
+    const startTime = new Date(`${date}T${time}`);
+    
+    const data = await apiRequest('/live/create', 'POST', {
+      name,
+      courseId,
+      startTime: startTime.toISOString(),
+      duration: parseInt(duration, 10),
+      record
+    });
+
+    showToast('Live class successfully scheduled!', 'success');
+    
+    const fullName = (state.user ? `${state.user.firstName} ${state.user.lastName || ''}`.trim() : '') || 'Anonymous';
+    const joinData = await apiRequest('/live/join', 'POST', {
+      meetingId: data.meeting.meetingId,
+      fullName,
+      role: 'moderator'
+    });
+
+    window.open(joinData.joinUrl, '_blank');
+    navigate('live');
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    scheduleBtn.disabled = false;
+    scheduleBtn.innerHTML = 'Schedule & Start';
+  }
+}
+window.handleCreateLiveClass = handleCreateLiveClass;
+
+function handleLiveMeetingsUpdate(meetings) {
+  meetings.forEach(update => {
+    const match = state.activeMeetings.find(m => m.meetingId === update.meetingId);
+    if (match) {
+      match.participantCount = update.participantCount;
+      match.isRunning = update.isRunning;
+    }
+  });
+  
+  const container = document.getElementById('active-meetings-container');
+  if (container && state.activeMeetings.length > 0) {
+    container.innerHTML = state.activeMeetings.map(m => {
+      const isTeacher = state.user?.role === 'teacher' || state.user?.role === 'admin';
+      return `
+      <div class="d-flex align-items-center justify-content-between p-3 rounded mb-2" style="background:var(--bg-color);">
+        <div>
+          <div class="fw-600"><span class="text-danger me-2">●</span>${m.name}</div>
+          <div class="text-muted small">${m.meetingId} · Started ${new Date(m.createdAt || m.startedAt).toLocaleTimeString()} · Participants: <strong class="text-primary">${m.participantCount || 0}</strong></div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary btn-sm" onclick="joinMeeting('${m.meetingId}','${m.name}')">Join</button>
+          ${isTeacher ? `<button class="btn btn-danger btn-sm" onclick="endMeeting('${m.meetingId}')">End</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+window.handleLiveMeetingsUpdate = handleLiveMeetingsUpdate;
+
+async function endMeeting(meetingId) {
+  if (!confirm('Are you sure you want to end this live class session?')) return;
+  try {
+    await apiRequest('/live/end', 'POST', { meetingId });
+    showToast('Live class session ended successfully.', 'success');
+    await loadActiveMeetings();
+    await loadRecordings();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+window.endMeeting = endMeeting;
 
 // ─── Chart Helpers ─────────────────────────────────────────────────────────────
 function renderBarChart(data) {

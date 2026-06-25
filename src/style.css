@@ -573,3 +573,15 @@ a:hover {
   margin-bottom: 0.25rem;
 }
 
+/* Focus visible states for keyboard accessibility */
+:focus-visible {
+  outline: 3px solid var(--primary) !important;
+  outline-offset: 2px;
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+

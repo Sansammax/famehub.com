@@ -19,7 +19,7 @@ router.use(verifyToken);
  *     tags: [Users]
  *     security: [{ bearerAuth: [] }]
  */
-router.get('/', requireRole('admin'), listUsers);
+router.get('/', requireRole('admin', 'teacher'), listUsers);
 
 /**
  * @swagger

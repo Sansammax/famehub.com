@@ -67,7 +67,7 @@ const cacheGet = async (key) => {
 
 export const createMeeting = async (req, res, next) => {
   try {
-    const { name, record } = req.body;
+    const { name, record, courseId, startTime, duration } = req.body;
     
     if (!name) {
       return res.status(400).json({ success: false, message: 'Please specify a meeting name.' });
@@ -91,7 +91,11 @@ export const createMeeting = async (req, res, next) => {
       moderatorPW,
       attendeePW,
       isRunning: true,
-      record: !!record
+      record: !!record,
+      courseId: courseId || null,
+      teacherId: req.user.id || null,
+      startTime: startTime ? new Date(startTime) : new Date(),
+      duration: duration ? parseInt(duration, 10) : 60
     });
 
     logger.audit('Meeting Created', req.user.email, { meetingId, name });
@@ -292,8 +296,15 @@ export const getRecordings = async (req, res, next) => {
 
 export const getActiveMeetings = async (req, res, next) => {
   try {
+    const where = { isRunning: true };
+    if (req.user.role === 'student') {
+      const enrollments = await CourseEnrollment.findAll({ where: { studentId: req.user.id } });
+      const enrolledCourseIds = enrollments.map(e => e.courseId);
+      where.courseId = enrolledCourseIds;
+    }
     const activeMeetings = await Meeting.findAll({
-      where: { isRunning: true }
+      where,
+      order: [['createdAt', 'DESC']]
     });
     res.status(200).json({
       success: true,

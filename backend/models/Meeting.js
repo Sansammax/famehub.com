@@ -32,6 +32,22 @@ const Meeting = sequelize.define('Meeting', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
+  courseId: {
+    type: DataTypes.UUID,
+    allowNull: true
+  },
+  teacherId: {
+    type: DataTypes.UUID,
+    allowNull: true
+  },
+  startTime: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  duration: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   endedAt: {
     type: DataTypes.DATE,
     allowNull: true

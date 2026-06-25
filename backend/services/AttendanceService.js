@@ -16,6 +16,7 @@ class AttendanceServiceClass {
     console.log(`[AttendanceService] Starting active participants monitor. Threshold: ${THRESHOLD}s`);
     this.intervalId = setInterval(async () => {
       try {
+        await this.syncBBBActiveAttendees();
         await this.checkActiveSessions();
       } catch (error) {
         console.error('[AttendanceService] Error checking active sessions:', error.message);
@@ -160,6 +161,68 @@ class AttendanceServiceClass {
           status: 'Present'
         });
       }
+    }
+  }
+
+  async syncBBBActiveAttendees() {
+    try {
+      const { Meeting } = await import('../models/Meeting.js');
+      const { BigBlueButtonService } = await import('./BigBlueButtonService.js');
+
+      const activeMeetings = await Meeting.findAll({
+        where: { isRunning: true }
+      });
+
+      for (const meeting of activeMeetings) {
+        const info = await BigBlueButtonService.getMeetingInfo(meeting.meetingId, meeting.moderatorPW);
+        
+        // If the meeting is ended on BBB (and we are not in mock/demo mode), mark as ended
+        if (!info.isRunning && !BigBlueButtonService.isDemoMode) {
+          meeting.isRunning = false;
+          meeting.endedAt = new Date();
+          await meeting.save();
+
+          // Also set leave time for any remaining attendees in this meeting
+          const activeParticipants = await Attendance.findAll({
+            where: { meetingId: meeting.meetingId, leaveTime: null }
+          });
+          for (const record of activeParticipants) {
+            record.leaveTime = new Date();
+            const sessionDuration = Math.round((record.leaveTime.getTime() - record.joinTime.getTime()) / 1000);
+            record.durationSeconds = (record.durationSeconds || 0) + sessionDuration;
+            record.status = record.durationSeconds >= THRESHOLD ? 'Present' : (record.durationSeconds > 10 ? 'Partial' : 'Absent');
+            await record.save();
+          }
+          continue;
+        }
+
+        // Otherwise, sync the attendees list
+        const bbbAttendees = info.attendees || [];
+        const currentActiveInDb = await Attendance.findAll({
+          where: { meetingId: meeting.meetingId, leaveTime: null }
+        });
+
+        // 1. Mark new joins
+        for (const att of bbbAttendees) {
+          // Check if already in DB as active
+          const activeInDb = currentActiveInDb.find(dbAtt => dbAtt.userEmail === att.userId);
+          if (!activeInDb) {
+            // Note: userID in join URL is the userEmail
+            await this.handleJoin(att.userId, att.fullName, meeting.meetingId, att.role === 'moderator' ? 'teacher' : 'student');
+          }
+        }
+
+        // 2. Mark leaves
+        for (const dbAtt of currentActiveInDb) {
+          // Check if still in BBB attendees
+          const stillActive = bbbAttendees.find(att => att.userId === dbAtt.userEmail);
+          if (!stillActive) {
+            await this.handleLeave(dbAtt.userEmail, meeting.meetingId);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[AttendanceService] Error syncing BBB attendees:', err.message);
     }
   }
 }

@@ -88,7 +88,7 @@ export const getStudentStats = async (req, res, next) => {
       CourseEnrollment.count({ where: { studentId } }),
       AssignmentSubmission.count({ where: { studentId } }),
       QuizAttempt.count({ where: { studentId, status: 'submitted' } }),
-      Attendance.count({ where: { studentId } })
+      Attendance.count({ where: { userEmail: req.user.email } })
     ]);
 
     const [gradedSubs, passedQuizzes] = await Promise.all([

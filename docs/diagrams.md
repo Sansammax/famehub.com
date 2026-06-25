@@ -1,10 +1,10 @@
 # FameHub System Diagrams & Workflows
 
-This document contains Mermaid diagrams illustrating the FameHub Phase 2 Enterprise Architecture and execution sequence flows.
+This document contains Mermaid diagrams illustrating the FameHub LMS Enterprise Architecture, database structure, deployment topology, and messaging flows.
 
 ---
 
-## 🏗️ System Architecture Topology
+## 1. Software Architecture Diagram (System Topology)
 
 ```mermaid
 graph TD
@@ -16,8 +16,7 @@ graph TD
 
   subgraph Backend ["Node.js / Express Server"]
     ExpressApp["Express.js Application"]
-    AuthMid["JWT Auth Middleware"]
-    RateLim["Rate Limiting & Helmet"]
+    AuthMid["JWT Auth & CSRF Middleware"]
     WSServer["WebSocket Server"]
     
     subgraph Services ["LMS Event Core"]
@@ -26,10 +25,11 @@ graph TD
       BBBService["BigBlueButton Service"]
       Attendance["Attendance Service"]
       Notification["Notification Service"]
+      AIService["AI Service Integration"]
     end
   end
 
-  subgraph Messaging ["Message broker Ledger"]
+  subgraph Messaging ["Message Broker Ledger"]
     KafkaBroker["Apache Kafka Topics"]
     LocalBus["Local EventBus Fallback"]
   end
@@ -46,8 +46,9 @@ graph TD
 
   SPA -->|HTTPS REST| ExpressApp
   WSClient <-->|WS Sockets / Upgrade| WSServer
-  ExpressApp --> RateLim --> AuthMid
+  ExpressApp --> AuthMid
   AuthMid --> BBBService
+  AuthMid --> AIService
   
   Producer -->|Publish Events| KafkaBroker
   Producer -->|Publish Events| LocalBus
@@ -68,115 +69,353 @@ graph TD
 
 ---
 
-## 🎬 Sequence Flows
-
-### 1. Join Meeting Workflow
-
-This diagram maps how a user retrieves signed credentials to join a virtual room:
+## 2. Entity-Relationship (ER) Diagram
 
 ```mermaid
-sequenceDiagram
-  autonumber
-  actor User as Student / Teacher
-  participant SPA as Frontend SPA
-  participant API as Express Router
-  participant BBB as BigBlueButtonService
-  participant Kafka as KafkaProducer
+erDiagram
+  User ||--o{ CourseEnrollment : enrolls
+  User ||--o{ Course : teaches
+  User ||--o{ QuizAttempt : attempts
+  User ||--o{ AssignmentSubmission : submits
+  User ||--o{ AuditLog : performs
+  Department ||--o{ User : contains
+  Department ||--o{ Course : categorizes
+  Course ||--o{ CourseEnrollment : has
+  Course ||--o{ Assignment : contains
+  Course ||--o{ Quiz : contains
+  Assignment ||--o{ AssignmentSubmission : has
+  Quiz ||--o{ QuizQuestion : contains
+  Quiz ||--o{ QuizAttempt : has
 
-  User->>SPA: Click "Join Live Class" or "Start Class"
-  SPA->>API: POST /api/live/join { meetingId, fullName } (Bearer JWT)
-  note over API: Authenticates token & verifies role
-  API->>BBB: getJoinUrl(meetingId, fullName, password, email, role)
-  note over BBB: Sorts parameters alphabetically<br/>Calculates sha1(api + params + secret)<br/>Builds signed join URL
-  BBB-->>API: Returns signed Join URL
-  alt is Student
-    API->>Kafka: publishEvent("live-class-events", "Student Joined Class", details)
-  else is Teacher
-    note over API: Marks meeting running in database
-  end
-  API-->>SPA: Returns JSON { success: true, joinUrl }
-  SPA->>User: Open URL in new window/tab (i.e. BigBlueButton / Simulator)
+  User {
+    UUID id PK
+    string email UK
+    string password
+    string role
+    string firstName
+    string lastName
+    boolean isActive
+  }
+  Department {
+    UUID id PK
+    string name UK
+    string description
+  }
+  Course {
+    UUID id PK
+    string title
+    string description
+    boolean isArchived
+  }
+  Quiz {
+    UUID id PK
+    string title
+    boolean isPublished
+    integer duration
+  }
+  QuizQuestion {
+    UUID id PK
+    text questionText
+    enum type
+    json options
+    json correctAnswers
+  }
+  QuizAttempt {
+    UUID id PK
+    json answers
+    float score
+    boolean passed
+    enum status
+  }
 ```
 
 ---
 
-### 2. Attendance Monitoring Loop
-
-Shows how attendance metrics are monitored dynamically based on classroom duration:
+## 3. Deployment Diagram (Docker / Kubernetes Topology)
 
 ```mermaid
-sequenceDiagram
-  autonumber
-  participant Consumer as Kafka Consumer
-  participant Attendance as AttendanceService
-  participant DB as SQLite / PostgreSQL
-  participant Producer as Kafka Producer
-
-  note over Attendance: Background Scanner loop ticks every 10s
-  loop Periodic Duration Scans
-    Attendance->>DB: Query active sessions (where leaveTime is NULL)
-    alt Student is Active & stayed > threshold (60s)
-      Attendance->>DB: Set status = 'Present'
-      Attendance->>Producer: publishEvent("attendance-events", "Attendance Marked", Present)
-    end
-  end
-
-  alt Student exits room (Simulator / BBB webhook)
-    Consumer->>Attendance: Student Left Class event
-    Attendance->>DB: Fetch attendance record
-    note over Attendance: Calculates final session duration
-    Attendance->>DB: Update leaveTime, duration & status
-    Attendance->>Producer: publishEvent("attendance-events", "Attendance Marked", Final Status)
-  end
+graph TB
+  Client[Client Browser] -->|HTTPS / WSS| Nginx[Nginx Reverse Proxy]
+  Nginx -->|Proxy pass 3000| Frontend[Frontend Container / SPA]
+  Nginx -->|Proxy pass 5000| Backend[Backend API Containers]
+  Backend -->|Cache / WS Sessions| Redis[Redis Instance]
+  Backend -->|Events Pub/Sub| Kafka[Kafka Cluster]
+  Kafka --> Zookeeper[Zookeeper Service]
+  Backend -->|Relational Storage| Postgres[(PostgreSQL DB)]
+  Backend -->|External Call| BBB[BigBlueButton Server]
 ```
 
 ---
 
-### 3. Kafka Event Pipeline
-
-Illustrates the asynchronous event publishing and consumer routing loops:
+## 4. Kafka Event Flow Diagram
 
 ```mermaid
-sequenceDiagram
-  autonumber
-  participant Trigger as Action Trigger (Controller)
-  participant Producer as KafkaProducer
-  participant Broker as Kafka Broker (or LocalBus)
-  participant Consumer as KafkaConsumer
-  participant Handler as Target Service (Attendance / Notification)
-
-  Trigger->>Producer: publishEvent(topic, eventType, data)
-  alt Kafka broker is connected
-    Producer->>Broker: Send JSON message string
-  else fallback mode
-    Producer->>Broker: Emit event on local EventEmitter
+graph LR
+  subgraph Producers
+    UserController[User Controller]
+    CourseController[Course Controller]
+    QuizController[Quiz Controller]
+    BBBService[BBB Service]
   end
-  note over Trigger: Returns REST HTTP response immediately (Non-blocking)
-  
-  Broker-->>Consumer: Poll message event
-  Consumer->>Consumer: Route event based on topic and eventType
-  Consumer->>Handler: Invoke execution method (e.g. handleJoin, createNotification)
+  subgraph Topics [Kafka Broker]
+    UserEvents[user-events]
+    CourseEvents[course-events]
+    QuizEvents[quiz-events]
+    BBBEvents[live-class-events]
+  end
+  subgraph Consumers
+    KafkaConsumer[Kafka Consumer Service]
+  end
+  subgraph Handlers
+    AttendanceService[Attendance Service]
+    NotificationService[Notification Service]
+  end
+
+  UserController -->|Publish| UserEvents
+  CourseController -->|Publish| CourseEvents
+  QuizController -->|Publish| QuizEvents
+  BBBService -->|Publish| BBBEvents
+
+  UserEvents -->|Poll| KafkaConsumer
+  CourseEvents -->|Poll| KafkaConsumer
+  QuizEvents -->|Poll| KafkaConsumer
+  BBBEvents -->|Poll| KafkaConsumer
+
+  KafkaConsumer --> AttendanceService
+  KafkaConsumer --> NotificationService
 ```
 
 ---
 
-### 4. WebSocket Notifications Flow
-
-Maps how consumed background events result in instant visual toast popups in the browser:
+## 5. BigBlueButton Integration Diagram
 
 ```mermaid
-sequenceDiagram
-  autonumber
-  participant Consumer as KafkaConsumer
-  participant Notify as NotificationService
-  participant DB as SQLite / PostgreSQL
-  participant WS as WebSocket Server
-  participant Client as Frontend SPA
+graph TD
+  subgraph Backend
+    Controller[Live Class Controller]
+    BBBService[BBB Service Class]
+  end
+  subgraph BBB_Server [BigBlueButton Server API]
+    API_Endpoint[API Endpoint]
+    MeetingState[Meeting State Manager]
+  end
 
-  Consumer->>Notify: Consume event (e.g. Class started / Attendance marked)
-  Notify->>DB: Create notification record (isRead: false)
-  Notify->>WS: Invoke wsCallback(userEmail, notification)
-  note over WS: Resolves target socket links from Client Map
-  WS->>Client: Send JSON payload { type: "NOTIFICATION", data }
-  Client->>Client: Append banner overlay & display toast popup
+  Controller -->|POST /api/live/join| BBBService
+  BBBService -->|Compute checksum & Call create| API_Endpoint
+  API_Endpoint -->|Return Status & Passwords| BBBService
+  BBBService -->|Compute Checksum & Generate Join URL| Controller
+  Controller -->|Redirect User| Client[Client Browser]
+  Client -->|Join Meeting Room| MeetingState
+  MeetingState -->|Webhooks / Events| KafkaConsumer[Kafka Consumer]
+```
+
+---
+
+## 6. AI Architecture Diagram
+
+```mermaid
+graph TD
+  subgraph Sockets
+    wsHandler[socketHandler.js]
+  end
+  subgraph AIServices [AI Service Layer]
+    ChatService[ChatService.js]
+    QuizGen[QuizGenerator.js]
+    AsgEval[AssignmentEvaluator.js]
+    Recs[RecommendationService.js]
+    LecSum[LectureSummarizer.js]
+    SemSearch[SemanticSearch.js]
+  end
+  subgraph AIProviders [Abstractions & Wrappers]
+    BaseProvider[Base Provider Wrapper]
+    OpenAI[OpenAI Provider]
+    Gemini[Gemini Provider]
+    Ollama[Ollama Provider]
+  end
+  subgraph Telemetry
+    AIMetrics[AIMetrics DB Model]
+  end
+
+  wsHandler -->|Stream request| ChatService
+  ChatService --> BaseProvider
+  QuizGen --> BaseProvider
+  AsgEval --> BaseProvider
+  Recs --> BaseProvider
+  LecSum --> BaseProvider
+  SemSearch --> BaseProvider
+
+  BaseProvider --> OpenAI
+  BaseProvider --> Gemini
+  BaseProvider --> Ollama
+  BaseProvider -->|Log Token usage & Costs| AIMetrics
+```
+
+---
+
+## 7. Sequence Diagrams
+
+### Grade Submission Flow (Plagiarism & AI Assistance)
+```mermaid
+sequenceDiagram
+  actor Teacher
+  participant SPA as Frontend UI
+  participant API as Backend API
+  participant AI as AssignmentEvaluator
+  participant DB as Database
+
+  Teacher->>SPA: Paste student paper text, click "Run AI Evaluation"
+  SPA->>API: POST /api/assignments/:id/submissions/:subId/ai-evaluate { text }
+  API->>AI: evaluateSubmission(text, rubric)
+  AI->>API: returns { suggestedMarks, plagiarismScore, critique }
+  API-->>SPA: JSON results
+  SPA->>Teacher: Displays suggested marks & critique
+  Teacher->>SPA: Adjusts values, clicks "Save Grade"
+  SPA->>API: POST /api/assignments/grade { marks, feedback }
+  API->>DB: Save Submission Grade
+  API-->>SPA: Success toast
+```
+
+### WebSocket Chat Chunk Stream Flow
+```mermaid
+sequenceDiagram
+  actor Student
+  participant UI as Chat Widget
+  participant Server as Sockets Handler
+  participant AI as ChatService
+  participant Provider as Gemini / OpenAI Provider
+
+  Student->>UI: Types question, clicks Send
+  UI->>Server: WebSocket: "AI_STREAM_REQUEST" { message, courseId }
+  Server->>Server: Start chunk buffer
+  Server->>AI: getChatResponseStream(message, history)
+  AI->>Provider: invokeStreamResponse()
+  loop streaming chunks
+    Provider->>AI: Yield chunk
+    AI->>Server: Stream chunk
+    Server->>UI: WebSocket: "AI_CHUNK" { content }
+    UI->>Student: Appends typing content
+  end
+  Server->>UI: WebSocket: "AI_TYPING_STOP"
+```
+
+### AI Quiz Drafting Flow
+```mermaid
+sequenceDiagram
+  actor Teacher
+  participant UI as Quiz Creator
+  participant API as Backend API
+  participant QGen as QuizGenerator
+  participant DB as Database
+
+  Teacher->>UI: Paste lecture text, click "Generate Questions"
+  UI->>API: POST /api/quizzes/generate-questions { content }
+  API->>QGen: generateQuestionsFromText(content)
+  QGen-->>API: JSON structure (MCQ, multi-select, true-false questions)
+  API-->>UI: Returns questions list
+  UI->>Teacher: Renders editable questions
+  Teacher->>UI: Adjusts details, clicks "Save Quiz"
+  UI->>API: POST /api/quizzes { questions }
+  API->>DB: BulkCreate QuizQuestions
+  API-->>UI: Quiz saved successfully
+```
+
+---
+
+## 8. Component Diagram
+
+```mermaid
+graph TD
+  subgraph Frontend_App ["Frontend App Component"]
+    UI[HTML/CSS/JS Router]
+    WS_Client[WS Sockets Handler]
+  end
+  subgraph Backend_REST ["REST Engine Server"]
+    Express[Express.js App]
+    Routers[Route Controllers]
+    Middleware[JWT / CSRF Middleware]
+  end
+  subgraph Event_Brokers ["Kafka Event Brokers"]
+    KafkaProducer[Kafka Producer]
+    KafkaConsumer[Kafka Consumer]
+  end
+  subgraph Background_Workers ["Event Workers"]
+    Attendance[Attendance Loop Monitor]
+    Notifications[Notification Dispatcher]
+  end
+  subgraph Storage_Layer ["Data & Cache Engines"]
+    DB[(PostgreSQL / SQLite)]
+    Redis[(Redis Status Store)]
+  end
+
+  UI -->|HTTPS Requests| Middleware
+  Middleware --> Routers
+  WS_Client <-->|WebSocket Upgrades| Express
+  Routers --> KafkaProducer
+  KafkaProducer -->|Publish| KafkaConsumer
+  KafkaConsumer --> Attendance
+  KafkaConsumer --> Notifications
+  Attendance --> DB
+  Notifications --> DB
+  Routers --> Redis
+```
+
+---
+
+## 9. Class Diagram
+
+```mermaid
+classDiagram
+  class User {
+    +UUID id
+    +String email
+    +String password
+    +String role
+    +Boolean isActive
+    +uploadAvatar()
+    +resetPassword()
+  }
+  class Course {
+    +UUID id
+    +String title
+    +String description
+    +Boolean isArchived
+    +enrollStudent()
+  }
+  class Quiz {
+    +UUID id
+    +String title
+    +Boolean isPublished
+    +publishQuiz()
+  }
+  class QuizQuestion {
+    +UUID id
+    +String questionText
+    +ENUM type
+    +JSON options
+    +JSON correctAnswers
+  }
+  class QuizAttempt {
+    +UUID id
+    +JSON answers
+    +Float score
+    +Boolean passed
+    +submitAttempt()
+  }
+  class BigBlueButtonService {
+    +createMeeting()
+    +joinMeeting()
+    +endMeeting()
+  }
+  class BaseAIProvider {
+    +generateCompletion()
+    +generateStream()
+  }
+
+  User "1" --> "*" QuizAttempt : attempts
+  Course "1" --> "*" Quiz : has
+  Quiz "1" --> "*" QuizQuestion : contains
+  Quiz "1" --> "*" QuizAttempt : has
+  BaseAIProvider <|-- OpenAIProvider
+  BaseAIProvider <|-- GeminiProvider
+  BaseAIProvider <|-- OllamaProvider
 ```

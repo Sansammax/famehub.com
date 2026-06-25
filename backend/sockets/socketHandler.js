@@ -213,19 +213,57 @@ export const initWebSocket = (server) => {
   });
 
   // Tick loop (tick rate = 5s)
-  setInterval(() => {
+  setInterval(async () => {
     try {
-      const payload = JSON.stringify({
+      // 1. Dashboard stats update
+      const statsPayload = JSON.stringify({
         type: 'DASHBOARD_STATS_UPDATE',
         timestamp: new Date().toISOString()
       });
       clients.forEach((userConnections) => {
         userConnections.forEach((ws) => {
           if (ws.readyState === ws.OPEN) {
-            ws.send(payload);
+            ws.send(statsPayload);
           }
         });
       });
+
+      // 2. Live meetings update
+      const { Meeting } = await import('../models/Meeting.js');
+      const { BigBlueButtonService } = await import('../services/BigBlueButtonService.js');
+      
+      const activeMeetings = await Meeting.findAll({ where: { isRunning: true } });
+      const updates = [];
+
+      for (const m of activeMeetings) {
+        const info = await BigBlueButtonService.getMeetingInfo(m.meetingId, m.moderatorPW);
+        
+        if (!info.isRunning && !BigBlueButtonService.isDemoMode) {
+          m.isRunning = false;
+          m.endedAt = new Date();
+          await m.save();
+        } else {
+          updates.push({
+            meetingId: m.meetingId,
+            isRunning: info.isRunning,
+            participantCount: info.participantCount
+          });
+        }
+      }
+
+      if (updates.length > 0) {
+        const livePayload = JSON.stringify({
+          type: 'LIVE_MEETINGS_UPDATE',
+          meetings: updates
+        });
+        clients.forEach((userConnections) => {
+          userConnections.forEach((ws) => {
+            if (ws.readyState === ws.OPEN) {
+              ws.send(livePayload);
+            }
+          });
+        });
+      }
     } catch (err) {
       // Ignored
     }

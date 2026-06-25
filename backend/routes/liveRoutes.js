@@ -25,6 +25,7 @@ router.post('/end', protect, authorize('teacher', 'admin'), endMeeting);
 router.get('/info/:meetingId', protect, getMeetingInfo);
 router.get('/recordings', protect, getRecordings);
 router.get('/active', protect, getActiveMeetings);
+router.get('/meetings', protect, getActiveMeetings);
 router.get('/attendance', protect, authorize('teacher', 'admin'), getAttendance);
 
 export default router;

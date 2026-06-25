@@ -34,6 +34,12 @@ Course.belongsTo(User, { foreignKey: 'teacherId', as: 'teacher' });
 Course.belongsToMany(User, { through: CourseEnrollment, foreignKey: 'courseId', otherKey: 'studentId', as: 'students' });
 User.belongsToMany(Course, { through: CourseEnrollment, foreignKey: 'studentId', otherKey: 'courseId', as: 'enrolledCourses' });
 
+// Course/User → Meetings
+Course.hasMany(Meeting, { foreignKey: 'courseId', as: 'meetings' });
+Meeting.belongsTo(Course, { foreignKey: 'courseId', as: 'course' });
+User.hasMany(Meeting, { foreignKey: 'teacherId', as: 'meetings' });
+Meeting.belongsTo(User, { foreignKey: 'teacherId', as: 'teacher' });
+
 // Course → Assignments
 Course.hasMany(Assignment, { foreignKey: 'courseId', as: 'assignments' });
 Assignment.belongsTo(Course, { foreignKey: 'courseId', as: 'course' });

@@ -6,7 +6,7 @@ class BigBlueButtonServiceClass {
   constructor() {
     this.url = bbbConfig.url;
     this.secret = bbbConfig.secret;
-    this.isDemoMode = true; // Set to true to utilize mock simulation pages
+    this.isDemoMode = process.env.BBB_DEMO_MODE === 'true';
   }
 
   // Generates signature checksum for BBB API call
@@ -128,7 +128,8 @@ class BigBlueButtonServiceClass {
         returncode: 'SUCCESS',
         meetingName: 'Mock Class',
         participantCount: 5,
-        isRunning: true
+        isRunning: true,
+        attendees: []
       };
     }
 
@@ -140,16 +141,36 @@ class BigBlueButtonServiceClass {
       const participantCountMatch = response.data.match(/<participantCount>(\d+)<\/participantCount>/);
       const participantCount = participantCountMatch ? parseInt(participantCountMatch[1], 10) : 0;
 
+      const attendees = [];
+      const attendeeRegex = /<attendee>([\s\S]*?)<\/attendee>/g;
+      let match;
+      while ((match = attendeeRegex.exec(response.data)) !== null) {
+        const block = match[1];
+        const userIdMatch = block.match(/<userID>([^<]+)<\/userID>/);
+        const fullNameMatch = block.match(/<fullName>([^<]+)<\/fullName>/);
+        const roleMatch = block.match(/<role>([^<]+)<\/role>/);
+
+        if (userIdMatch && fullNameMatch) {
+          attendees.push({
+            userId: userIdMatch[1],
+            fullName: fullNameMatch[1],
+            role: roleMatch ? roleMatch[1].toLowerCase() : 'viewer'
+          });
+        }
+      }
+
       return {
         returncode: 'SUCCESS',
         isRunning,
-        participantCount
+        participantCount,
+        attendees
       };
     } catch (error) {
       return {
         returncode: 'FAILED',
         isRunning: false,
-        participantCount: 0
+        participantCount: 0,
+        attendees: []
       };
     }
   }
