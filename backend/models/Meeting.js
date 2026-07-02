@@ -16,6 +16,10 @@ const Meeting = sequelize.define('Meeting', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  meetingName: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   moderatorPW: {
     type: DataTypes.STRING,
     allowNull: false
@@ -28,6 +32,10 @@ const Meeting = sequelize.define('Meeting', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
   record: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
@@ -36,11 +44,27 @@ const Meeting = sequelize.define('Meeting', {
     type: DataTypes.UUID,
     allowNull: true
   },
+  courseName: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   teacherId: {
     type: DataTypes.UUID,
     allowNull: true
   },
+  teacherName: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  joinUrl: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
   startTime: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  startedAt: {
     type: DataTypes.DATE,
     allowNull: true
   },

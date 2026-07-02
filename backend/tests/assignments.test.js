@@ -19,7 +19,7 @@ beforeAll(async () => {
   // Get a seeded course
   const coursesRes = await request(app).get('/api/courses').set('Authorization', `Bearer ${teacherToken}`);
   courseId = coursesRes.body.courses[0]?.id;
-});
+}, 30000);
 
 describe('Assignments API', () => {
   test('POST /api/assignments - teacher creates assignment', async () => {

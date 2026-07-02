@@ -10,7 +10,6 @@ This repository has been upgraded to **Phase 2 Enterprise Architecture**, transf
 
 * **Authentication**: Token-based security using JSON Web Tokens (JWT) and role-based access control (RBAC) (Admin, Teacher, Student).
 * **Virtual Classrooms**: Complete integration with BigBlueButton APIs featuring secure SHA-1 signature checksum calculations.
-* **Built-in Live Simulator**: A fully functional browser-based BigBlueButton simulator to test the complete classroom cycle (joins, pings, leaves) without hosting an external BBB server.
 * **Event-Driven Messaging**: Asynchronous event publishing to Apache Kafka across topics like `live-class-events`, `attendance-events`, and `notification-events` with a resilient in-memory local event bus fallback.
 * **Automatic Attendance Service**: Watches active classrooms, logs join/leave timestamps, monitors duration, and auto-promotes student status to "Present" when configurable thresholds are reached.
 * **Real-time Live Dashboard**: Displays metrics (online students, active meetings, participant count) updating instantly over WebSockets.
@@ -38,7 +37,7 @@ famehub.com/
 ├── docs/                     # Visual diagrams and guides
 │   ├── README.md             # Documentation overview
 │   ├── api.md                # REST API endpoints specs
-│   ├── bbb_integration.md    # BigBlueButton signature & simulator guide
+│   ├── bbb_integration.md    # BigBlueButton signature & integration guide
 │   ├── kafka_architecture.md # Event-driven topics & schemas mapping
 │   ├── environment_variables.md # Key configuration variables
 │   ├── deployment.md         # Dev and docker compose execution guide

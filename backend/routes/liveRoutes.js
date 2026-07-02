@@ -6,17 +6,11 @@ import {
   getMeetingInfo,
   getRecordings,
   getActiveMeetings,
-  handleSimulatorAction,
-  renderMockClassroom,
   getAttendance
 } from '../controllers/liveController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
-
-// Simulated classroom and events
-router.get('/mock-classroom', renderMockClassroom);
-router.post('/simulate-action', handleSimulatorAction);
 
 // BigBlueButton CRUD APIs
 router.post('/create', protect, authorize('teacher', 'admin'), createMeeting);

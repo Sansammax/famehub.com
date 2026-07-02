@@ -17,7 +17,7 @@ beforeAll(async () => {
   adminToken = aRes.body.token;
   teacherToken = tRes.body.token;
   studentToken = sRes.body.token;
-});
+}, 30000);
 
 describe('Courses API', () => {
   test('GET /api/courses - returns list of courses', async () => {
@@ -76,6 +76,9 @@ describe('Departments API', () => {
   });
 
   test('POST /api/departments - admin can create department', async () => {
+    const { Department } = await import('../models/index.js');
+    await Department.destroy({ where: { name: 'Physics Dept Jest' } });
+
     const res = await request(app)
       .post('/api/departments')
       .set('Authorization', `Bearer ${adminToken}`)

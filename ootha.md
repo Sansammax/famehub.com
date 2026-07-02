@@ -25,7 +25,7 @@ FameHub is structured as a decoupled Single Page Application (SPA) with a lightw
        v                            v            v                               v
 +-------------+              +--------------+ +------------+              +---------------+
 | SQLite/SQL  |              | Redis Cache  | |   Apache   |              | BigBlueButton |
-| Persistence |              | (Temporary)  | |   Kafka    |              |   Simulator   |
+| Persistence |              | (Temporary)  | |   Kafka    |              |   API         |
 +-------------+              +--------------+ +------------+              +---------------+
 ```
 
@@ -55,10 +55,7 @@ FameHub is structured as a decoupled Single Page Application (SPA) with a lightw
 
 ### 3. BigBlueButton Live Classroom Integration
 - **Checksum Signatures**: Generates SHA-1 hash hashes to communicate with BigBlueButton APIs (`/create`, `/join`, `/end`, `/getMeetingInfo`, `/getRecordings`).
-- **Built-in HTML Live Simulator**:
-  - Provides a self-contained mock virtual room if no remote BBB server is configured.
-  - Toggles audio/video streams, displays participant queues, and offers mock buttons to simulate students joining/leaving the session.
-  - Generates realistic classroom cycle events.
+- **Direct Server Connection**: Connects to the official production BigBlueButton server using credentials configured via environment variables.
 
 ### 4. Event-Driven Messaging (Apache Kafka)
 - **Central Event Streaming**: Dispatches messages to Kafka topics like `live-class-events`, `attendance-events`, and `notification-events`.
@@ -111,17 +108,14 @@ Currently, the backend runs on **SQLite** (`database.sqlite`), which is a file-b
   3. Ensure database migrations are run at startup (`npm run db:migrate` or let Sequelize auto-sync in `backend/config/database.js` depending on migration policy).
 
 ### 2. Connect to an Actual BigBlueButton Server
-The project is running in Simulator Mode. To connect to an actual live classroom:
-- **Requirement**: An active BigBlueButton server instance (or a third-party hosted BBB service) with API credentials.
+The application is configured to connect to the production BigBlueButton server.
+- **Requirement**: Verified credentials matching the active BBB server instance.
 - **Process**:
-  1. Modify `backend/.env` to configure your BBB credentials and turn off Demo Mode:
+  1. Confirm the credentials are set in `backend/.env`:
      ```ini
-     BBB_URL=https://your-bbb-domain.com/bigbluebutton/api
-     BBB_SECRET=your_actual_shared_secret_here
-     # Set to false to disable Simulator Mode and route to the actual BBB server
-     BBB_DEMO_MODE=false
+     BBB_URL=https://app.bbbserver.com/bbb-integration-v2/60a53a74-f9df-496a-9ae1-ca3079f26a7c/api
+     BBB_SECRET=118c788f-d02e-444a-bbbe-055235f0100b
      ```
-  2. Ensure the production BBB server can send Webhook callbacks back to the FameHub server if you plan to capture real attendance events via official webhooks (instead of simulated action loops).
 
 ### 3. Production Apache Kafka Setup
 The current environment is configured with a single-node Kafka instance in Docker, and the backend falls back to an in-memory event bus when Kafka is unavailable.

@@ -36,7 +36,7 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
   const token = localStorage.getItem('token');
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  
+
   const csrfToken = getCookie('csrfToken');
   if (csrfToken) headers['x-csrf-token'] = csrfToken;
 
@@ -51,7 +51,7 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
 async function apiUpload(endpoint, formData) {
   const token = localStorage.getItem('token');
   const headers = { 'Authorization': `Bearer ${token}` };
-  
+
   const csrfToken = getCookie('csrfToken');
   if (csrfToken) headers['x-csrf-token'] = csrfToken;
 
@@ -82,7 +82,7 @@ function connectWebSocket() {
       else if (msg.type === 'AI_CHUNK') handleAiChunk(msg.content);
       else if (msg.type === 'AI_TYPING_STOP') handleAiTypingStop(msg.response, msg.error);
       else if (msg.type === 'LIVE_MEETINGS_UPDATE') handleLiveMeetingsUpdate(msg.meetings);
-    } catch (e) {}
+    } catch (e) { }
   };
   socket.onclose = () => setTimeout(connectWebSocket, 4000);
 }
@@ -144,30 +144,30 @@ function Sidebar(role) {
     `<div class="nav-item"><a class="nav-link ${state.currentRoute === route ? 'active' : ''}" role="button" tabindex="0" onclick="navigate('${route}')" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); navigate('${route}'); }"><i class="bi ${icon}"></i>${label}</a></div>`;
 
   const adminNav = `
-    ${link('admin','bi-grid-1x2','Dashboard')}
-    ${link('users','bi-people','Users')}
-    ${link('departments','bi-building','Departments')}
-    ${link('courses','bi-book','Courses')}
-    ${link('assignments','bi-file-earmark-text','Assignments')}
-    ${link('quizzes','bi-patch-question','Quizzes')}
-    ${link('live','bi-camera-video','Live Classes')}
-    ${link('analytics','bi-bar-chart-line','Analytics')}
-    ${link('audit','bi-shield-check','Audit Logs')}`;
+    ${link('admin', 'bi-grid-1x2', 'Dashboard')}
+    ${link('users', 'bi-people', 'Users')}
+    ${link('departments', 'bi-building', 'Departments')}
+    ${link('courses', 'bi-book', 'Courses')}
+    ${link('assignments', 'bi-file-earmark-text', 'Assignments')}
+    ${link('quizzes', 'bi-patch-question', 'Quizzes')}
+    ${link('live', 'bi-camera-video', 'Live Classes')}
+    ${link('analytics', 'bi-bar-chart-line', 'Analytics')}
+    ${link('audit', 'bi-shield-check', 'Audit Logs')}`;
 
   const teacherNav = `
-    ${link('teacher','bi-grid-1x2','Dashboard')}
-    ${link('courses','bi-book','My Courses')}
-    ${link('assignments','bi-file-earmark-text','Assignments')}
-    ${link('quizzes','bi-patch-question','Quizzes')}
-    ${link('live','bi-camera-video','Live Class')}
-    ${link('analytics','bi-bar-chart-line','Reports')}`;
+    ${link('teacher', 'bi-grid-1x2', 'Dashboard')}
+    ${link('courses', 'bi-book', 'My Courses')}
+    ${link('assignments', 'bi-file-earmark-text', 'Assignments')}
+    ${link('quizzes', 'bi-patch-question', 'Quizzes')}
+    ${link('live', 'bi-camera-video', 'Live Class')}
+    ${link('analytics', 'bi-bar-chart-line', 'Reports')}`;
 
   const studentNav = `
-    ${link('student','bi-grid-1x2','Dashboard')}
-    ${link('courses','bi-journal-album','My Courses')}
-    ${link('assignments','bi-file-earmark-check','Assignments')}
-    ${link('quizzes','bi-patch-question','Quizzes')}
-    ${link('live','bi-camera-video','Join Class')}`;
+    ${link('student', 'bi-grid-1x2', 'Dashboard')}
+    ${link('courses', 'bi-journal-album', 'My Courses')}
+    ${link('assignments', 'bi-file-earmark-check', 'Assignments')}
+    ${link('quizzes', 'bi-patch-question', 'Quizzes')}
+    ${link('live', 'bi-camera-video', 'Join Class')}`;
 
   const navMap = { admin: adminNav, teacher: teacherNav, student: studentNav };
 
@@ -185,7 +185,7 @@ function Sidebar(role) {
 
 function Topbar(title) {
   const u = state.user;
-  const initials = u ? `${(u.firstName||'')[0]||''}${(u.lastName||'')[0]||u.email[0]}`.toUpperCase() : '?';
+  const initials = u ? `${(u.firstName || '')[0] || ''}${(u.lastName || '')[0] || u.email[0]}`.toUpperCase() : '?';
   return `
   <header class="topbar">
     <div class="d-flex align-items-center gap-3">
@@ -204,7 +204,7 @@ function Topbar(title) {
       <div class="d-flex align-items-center gap-2">
         <div class="avatar d-flex align-items-center justify-content-center fw-bold" style="background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;font-size:0.875rem;">${initials}</div>
         <div class="d-none d-md-block">
-          <div style="font-weight:600;font-size:0.875rem;">${u?.firstName ? `${u.firstName} ${u.lastName||''}` : u?.email}</div>
+          <div style="font-weight:600;font-size:0.875rem;">${u?.firstName ? `${u.firstName} ${u.lastName || ''}` : u?.email}</div>
           <div style="font-size:0.75rem;color:var(--text-muted);text-transform:capitalize;">${u?.role}</div>
         </div>
       </div>
@@ -852,8 +852,8 @@ function renderLiveClassroom() {
   return Layout(role, 'Live Classroom', `
     <div class="d-flex gap-3 mb-4 flex-wrap">
       ${role === 'teacher' || role === 'admin'
-        ? `<button class="btn btn-primary" id="create-class-btn" onclick="navigate('create-live-class')"><i class="bi bi-plus-circle me-1"></i>Create Live Class</button>`
-        : `<button class="btn btn-success" id="join-class-btn" onclick="openJoinModal()"><i class="bi bi-box-arrow-in-right me-1"></i>Join Class</button>`}
+      ? `<button class="btn btn-primary" id="create-class-btn" onclick="navigate('create-live-class')"><i class="bi bi-plus-circle me-1"></i>Create Live Class</button>`
+      : `<button class="btn btn-success" id="join-class-btn" onclick="openJoinModal()"><i class="bi bi-box-arrow-in-right me-1"></i>Join Class</button>`}
     </div>
     <div id="meetings-list">
       <div class="card p-4">
@@ -909,7 +909,7 @@ async function bootstrapPage(route) {
     case 'student': await loadStudentDashboard(); break;
     case 'users': await loadUsers(); await loadDepartmentsForSelect('user-department'); break;
     case 'departments': await loadDepartmentsGrid(); break;
-    case 'courses': await loadCourses(); await loadDepartmentsForSelect('course-department'); if (state.user?.role==='admin') await loadTeachersForSelect('course-teacher'); break;
+    case 'courses': await loadCourses(); await loadDepartmentsForSelect('course-department'); if (state.user?.role === 'admin') await loadTeachersForSelect('course-teacher'); break;
     case 'assignments': await populateCourseFilterForAssignments(); await loadAssignments(); break;
     case 'quizzes': await populateCourseFilterForQuizzes(); await loadQuizzes(); break;
     case 'analytics': await loadAnalytics(); break;
@@ -967,32 +967,32 @@ async function loadAdminDashboard() {
     const statCards = document.getElementById('stat-cards');
     if (!statCards) return;
     statCards.innerHTML = `
-      ${StatCard('bi-people-fill','Total Users', data.stats.totalUsers, '#4f46e5')}
-      ${StatCard('bi-book-fill','Active Courses', data.stats.totalCourses, '#10b981')}
-      ${StatCard('bi-file-earmark-text-fill','Assignments', data.stats.totalAssignments, '#f59e0b')}
-      ${StatCard('bi-patch-question-fill','Published Quizzes', data.stats.totalQuizzes, '#ef4444')}`;
+      ${StatCard('bi-people-fill', 'Total Users', data.stats.totalUsers, '#4f46e5')}
+      ${StatCard('bi-book-fill', 'Active Courses', data.stats.totalCourses, '#10b981')}
+      ${StatCard('bi-file-earmark-text-fill', 'Assignments', data.stats.totalAssignments, '#f59e0b')}
+      ${StatCard('bi-patch-question-fill', 'Published Quizzes', data.stats.totalQuizzes, '#ef4444')}`;
 
     // User breakdown
     const ub = data.userBreakdown;
     document.getElementById('user-breakdown').innerHTML = `
-      <div class="mb-3">${ProgressBar('Students', ub.students, ub.students+ub.teachers+ub.admins, '#4f46e5')}</div>
-      <div class="mb-3">${ProgressBar('Teachers', ub.teachers, ub.students+ub.teachers+ub.admins, '#10b981')}</div>
-      ${ProgressBar('Admins', ub.admins, ub.students+ub.teachers+ub.admins, '#f59e0b')}`;
+      <div class="mb-3">${ProgressBar('Students', ub.students, ub.students + ub.teachers + ub.admins, '#4f46e5')}</div>
+      <div class="mb-3">${ProgressBar('Teachers', ub.teachers, ub.students + ub.teachers + ub.admins, '#10b981')}</div>
+      ${ProgressBar('Admins', ub.admins, ub.students + ub.teachers + ub.admins, '#f59e0b')}`;
 
     // Submissions
     const subs = data.submissions;
     document.getElementById('submissions-summary').innerHTML = `
       <div class="d-flex justify-content-between mb-2"><span>Graded</span><strong class="text-success">${subs.graded}</strong></div>
-      <div class="progress mb-3" style="height:8px;"><div class="progress-bar bg-success" style="width:${subs.graded+subs.pending>0?Math.round(subs.graded/(subs.graded+subs.pending)*100):0}%"></div></div>
+      <div class="progress mb-3" style="height:8px;"><div class="progress-bar bg-success" style="width:${subs.graded + subs.pending > 0 ? Math.round(subs.graded / (subs.graded + subs.pending) * 100) : 0}%"></div></div>
       <div class="d-flex justify-content-between mb-2"><span>Pending Review</span><strong class="text-warning">${subs.pending}</strong></div>
-      <div class="progress" style="height:8px;"><div class="progress-bar bg-warning" style="width:${subs.graded+subs.pending>0?Math.round(subs.pending/(subs.graded+subs.pending)*100):0}%"></div></div>`;
+      <div class="progress" style="height:8px;"><div class="progress-bar bg-warning" style="width:${subs.graded + subs.pending > 0 ? Math.round(subs.pending / (subs.graded + subs.pending) * 100) : 0}%"></div></div>`;
 
     // Quiz stats
     const qs = data.quizStats;
     document.getElementById('quiz-summary').innerHTML = `
       <div class="d-flex justify-content-between mb-2"><span>Passed</span><strong class="text-success">${qs.passed}</strong></div>
       <div class="d-flex justify-content-between mb-2"><span>Failed</span><strong class="text-danger">${qs.failed}</strong></div>
-      <div class="mt-3">${ProgressBar('Pass Rate', qs.passed, qs.passed+qs.failed, '#10b981')}</div>`;
+      <div class="mt-3">${ProgressBar('Pass Rate', qs.passed, qs.passed + qs.failed, '#10b981')}</div>`;
 
     // Attendance chart (simple bar chart using CSS)
     if (data.attendanceTrend) {
@@ -1010,9 +1010,9 @@ async function loadTeacherDashboard() {
     const sc = document.getElementById('teacher-stat-cards');
     if (!sc) return;
     sc.innerHTML = `
-      ${StatCard('bi-book','My Courses', data.courses.length, '#4f46e5')}
-      ${StatCard('bi-file-earmark-text','Assignments Posted', data.totalAssignments, '#10b981')}
-      ${StatCard('bi-patch-question','Quizzes Created', data.totalQuizzes, '#f59e0b')}`;
+      ${StatCard('bi-book', 'My Courses', data.courses.length, '#4f46e5')}
+      ${StatCard('bi-file-earmark-text', 'Assignments Posted', data.totalAssignments, '#10b981')}
+      ${StatCard('bi-patch-question', 'Quizzes Created', data.totalQuizzes, '#f59e0b')}`;
 
     const coursesList = document.getElementById('teacher-courses-list');
     if (!coursesList) return;
@@ -1041,10 +1041,10 @@ async function loadStudentDashboard() {
     const sc = document.getElementById('student-stat-cards');
     if (!sc) return;
     sc.innerHTML = `
-      ${StatCard('bi-journal-album','Enrolled Courses', data.stats.enrollments, '#4f46e5')}
-      ${StatCard('bi-upload','Submissions', data.stats.submissions, '#10b981')}
-      ${StatCard('bi-award','Avg Marks', `${data.averageMarks}%`, '#f59e0b')}
-      ${StatCard('bi-check-circle','Quizzes Passed', data.quizzesPassed, '#6366f1')}`;
+      ${StatCard('bi-journal-album', 'Enrolled Courses', data.stats.enrollments, '#4f46e5')}
+      ${StatCard('bi-upload', 'Submissions', data.stats.submissions, '#10b981')}
+      ${StatCard('bi-award', 'Avg Marks', `${data.averageMarks}%`, '#f59e0b')}
+      ${StatCard('bi-check-circle', 'Quizzes Passed', data.quizzesPassed, '#6366f1')}`;
 
     const coursesList = document.getElementById('student-courses-list');
     if (coursesList) {
@@ -1088,7 +1088,7 @@ async function loadStudentDashboard() {
           </div>`).join('');
       }
       if (courseContextDropdown) {
-        courseContextDropdown.innerHTML = '<option value="">General Chat</option>' + 
+        courseContextDropdown.innerHTML = '<option value="">General Chat</option>' +
           coursesRes.courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
       }
     } else {
@@ -1126,14 +1126,14 @@ async function loadUsers() {
         <td>
           <div class="d-flex align-items-center gap-2">
             <div class="avatar d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;font-size:0.8rem;background:linear-gradient(135deg,#4f46e5,#818cf8);color:#fff;border-radius:50%;">
-              ${(u.firstName?.[0]||'') + (u.lastName?.[0]||u.email[0])}</div>
-            <div>${u.firstName ? `<div class="fw-500">${escapeHtml(u.firstName)} ${escapeHtml(u.lastName||'')}</div>` : ''}</div>
+              ${(u.firstName?.[0] || '') + (u.lastName?.[0] || u.email[0])}</div>
+            <div>${u.firstName ? `<div class="fw-500">${escapeHtml(u.firstName)} ${escapeHtml(u.lastName || '')}</div>` : ''}</div>
           </div>
         </td>
         <td class="text-muted small">${escapeHtml(u.email)}</td>
-        <td>${Badge(u.role, u.role==='admin'?'danger':u.role==='teacher'?'primary':'success')}</td>
+        <td>${Badge(u.role, u.role === 'admin' ? 'danger' : u.role === 'teacher' ? 'primary' : 'success')}</td>
         <td class="text-muted small">${escapeHtml(u.department?.name || '—')}</td>
-        <td>${Badge(u.isActive?'Active':'Inactive', u.isActive?'success':'warning')}</td>
+        <td>${Badge(u.isActive ? 'Active' : 'Inactive', u.isActive ? 'success' : 'warning')}</td>
         <td>
           <div class="d-flex gap-1">
             <button class="btn btn-sm btn-outline-primary" onclick="openUserModal('${u.id}')"><i class="bi bi-pencil"></i></button>
@@ -1146,9 +1146,9 @@ async function loadUsers() {
     if (pag) {
       pag.innerHTML = `<span class="text-muted small">Showing ${data.users.length} of ${data.total}</span>
         <div class="btn-group btn-group-sm">
-          <button class="btn btn-outline-secondary" onclick="userPage=Math.max(1,userPage-1);loadUsers()" ${userPage<=1?'disabled':''}>‹ Prev</button>
+          <button class="btn btn-outline-secondary" onclick="userPage=Math.max(1,userPage-1);loadUsers()" ${userPage <= 1 ? 'disabled' : ''}>‹ Prev</button>
           <button class="btn btn-outline-secondary disabled">Page ${data.page} of ${data.pages}</button>
-          <button class="btn btn-outline-secondary" onclick="userPage++;loadUsers()" ${userPage>=data.pages?'disabled':''}>Next ›</button>
+          <button class="btn btn-outline-secondary" onclick="userPage++;loadUsers()" ${userPage >= data.pages ? 'disabled' : ''}>Next ›</button>
         </div>`;
     }
   } catch (err) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">${err.message}</td></tr>`; }
@@ -1252,7 +1252,7 @@ async function loadDepartmentsForSelect(selectId) {
       opt.value = d.id; opt.textContent = d.name;
       sel.appendChild(opt);
     });
-  } catch {}
+  } catch { }
 }
 
 function openDeptModal(id = null) {
@@ -1294,14 +1294,14 @@ async function loadCourses() {
   const archived = document.getElementById('course-filter-archived')?.value || 'false';
   const role = state.user?.role;
 
-  grid.innerHTML = [1,2,3].map(()=>SkeletonCard()).join('');
+  grid.innerHTML = [1, 2, 3].map(() => SkeletonCard()).join('');
   try {
     const params = new URLSearchParams({ search, archived });
     if (role === 'student') params.append('studentId', state.user.id);
     const data = await apiRequest(`/courses?${params}`);
 
     if (!data.courses.length) {
-      grid.innerHTML = `<div class="col-12">${EmptyState('bi-book', 'No courses found', role==='student'?'You are not enrolled in any courses.':'Create your first course.')}</div>`;
+      grid.innerHTML = `<div class="col-12">${EmptyState('bi-book', 'No courses found', role === 'student' ? 'You are not enrolled in any courses.' : 'Create your first course.')}</div>`;
       return;
     }
 
@@ -1317,15 +1317,15 @@ async function loadCourses() {
           <div class="p-4">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <h5 class="fw-bold mb-0" style="font-size:1rem;">${escapeHtml(c.title)}</h5>
-              ${c.isArchived ? Badge('Archived','warning') : ''}
+              ${c.isArchived ? Badge('Archived', 'warning') : ''}
             </div>
             <p class="text-muted small mb-3">${escapeHtml(c.description || 'No description')}</p>
             <div class="d-flex justify-content-between text-muted small mb-3">
-              <span><i class="bi bi-person me-1"></i>${c.teacher ? `${escapeHtml(c.teacher.firstName)} ${escapeHtml(c.teacher.lastName||'')}` : 'Unassigned'}</span>
+              <span><i class="bi bi-person me-1"></i>${c.teacher ? `${escapeHtml(c.teacher.firstName)} ${escapeHtml(c.teacher.lastName || '')}` : 'Unassigned'}</span>
               <span><i class="bi bi-building me-1"></i>${escapeHtml(c.department?.name || 'General')}</span>
             </div>
             <div class="d-flex gap-2 flex-wrap">
-              ${isAdmin||isTeacher ? `
+              ${isAdmin || isTeacher ? `
                 <button class="btn btn-sm btn-outline-primary" onclick="openCourseModal('${c.id}')"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm btn-outline-success" onclick="openEnrollModal('${c.id}')"><i class="bi bi-person-plus me-1"></i>Enroll</button>
                 <button class="btn btn-sm btn-outline-secondary" onclick="viewCourseStudents('${c.id}','${c.title}')"><i class="bi bi-people"></i></button>
@@ -1349,10 +1349,10 @@ async function loadTeachersForSelect(selectId) {
     if (!sel) return;
     data.users.forEach(u => {
       const opt = document.createElement('option');
-      opt.value = u.id; opt.textContent = `${u.firstName} ${u.lastName||''} (${u.email})`;
+      opt.value = u.id; opt.textContent = `${u.firstName} ${u.lastName || ''} (${u.email})`;
       sel.appendChild(opt);
     });
-  } catch {}
+  } catch { }
 }
 
 function openCourseModal(id = null) {
@@ -1404,7 +1404,7 @@ async function openEnrollModal(courseId) {
     list.innerHTML = data.users.map(u => `
       <div class="form-check">
         <input type="checkbox" class="form-check-input enroll-checkbox" id="enroll-${u.id}" value="${u.id}">
-        <label class="form-check-label" for="enroll-${u.id}">${u.firstName} ${u.lastName||''} (${u.email})</label>
+        <label class="form-check-label" for="enroll-${u.id}">${u.firstName} ${u.lastName || ''} (${u.email})</label>
       </div>`).join('') || '<p class="text-muted">No students found.</p>';
   } catch (err) { list.innerHTML = `<p class="text-danger">${err.message}</p>`; }
 }
@@ -1431,8 +1431,8 @@ async function viewCourseStudents(courseId, courseTitle) {
           <div class="modal-content lms-modal">
             <div class="modal-header"><h5 class="modal-title">Students — ${courseTitle}</h5><button type="button" class="btn-close" onclick="this.closest('.modal').parentElement.remove()"></button></div>
             <div class="modal-body" style="max-height:400px;overflow-y:auto;">
-              ${!data.students.length ? EmptyState('bi-people','No students enrolled','Use the enroll button to add students.') :
-                data.students.map(s => `<div class="d-flex align-items-center gap-2 py-2 border-bottom"><div class="avatar d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;font-size:0.8rem;background:#e0e7ff;color:#4f46e5;border-radius:50%;">${(s.firstName?.[0]||s.email[0]).toUpperCase()}</div><div><div class="fw-500">${s.firstName} ${s.lastName||''}</div><div class="text-muted small">${s.email}</div></div></div>`).join('')}
+              ${!data.students.length ? EmptyState('bi-people', 'No students enrolled', 'Use the enroll button to add students.') :
+        data.students.map(s => `<div class="d-flex align-items-center gap-2 py-2 border-bottom"><div class="avatar d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;font-size:0.8rem;background:#e0e7ff;color:#4f46e5;border-radius:50%;">${(s.firstName?.[0] || s.email[0]).toUpperCase()}</div><div><div class="fw-500">${s.firstName} ${s.lastName || ''}</div><div class="text-muted small">${s.email}</div></div></div>`).join('')}
             </div>
           </div>
         </div>
@@ -1450,31 +1450,31 @@ async function populateCourseFilterForAssignments() {
     const sel2 = document.getElementById('new-assignment-course');
     if (!sel) return;
     data.courses.forEach(c => {
-      [sel, sel2].forEach(s => { if(s){ const o=document.createElement('option'); o.value=c.id; o.textContent=c.title; s.appendChild(o); }});
+      [sel, sel2].forEach(s => { if (s) { const o = document.createElement('option'); o.value = c.id; o.textContent = c.title; s.appendChild(o); } });
     });
-  } catch {}
+  } catch { }
 }
 
 async function loadAssignments() {
   const courseId = document.getElementById('assignment-course-filter')?.value || '';
   const list = document.getElementById('assignments-list');
   if (!list) return;
-  list.innerHTML = [1,2].map(()=>`<div class="col-md-6">${SkeletonCard()}</div>`).join('');
+  list.innerHTML = [1, 2].map(() => `<div class="col-md-6">${SkeletonCard()}</div>`).join('');
   try {
     const params = new URLSearchParams();
     if (courseId) params.append('courseId', courseId);
     const data = await apiRequest(`/assignments?${params}`);
     state.assignments = data.assignments;
     if (!data.assignments.length) {
-      list.innerHTML = `<div class="col-12">${EmptyState('bi-file-earmark-text','No assignments found','No assignments posted for your courses yet.')}</div>`;
+      list.innerHTML = `<div class="col-12">${EmptyState('bi-file-earmark-text', 'No assignments found', 'No assignments posted for your courses yet.')}</div>`;
       return;
     }
     list.innerHTML = data.assignments.map(a => {
       const isStudent = state.user?.role === 'student';
       const sub = a.mySubmission;
       const isOverdue = new Date(a.dueDate) < new Date();
-      const statusBadge = sub ? Badge(sub.status==='graded'?`Graded: ${sub.marks}/${a.maxMarks}`:'Submitted', sub.status==='graded'?'success':'primary')
-        : isOverdue ? Badge('Overdue','danger') : Badge('Pending','warning');
+      const statusBadge = sub ? Badge(sub.status === 'graded' ? `Graded: ${sub.marks}/${a.maxMarks}` : 'Submitted', sub.status === 'graded' ? 'success' : 'primary')
+        : isOverdue ? Badge('Overdue', 'danger') : Badge('Pending', 'warning');
 
       return `
       <div class="col-md-6">
@@ -1573,18 +1573,18 @@ async function viewSubmissions(assignmentId, title) {
           <div class="modal-content lms-modal">
             <div class="modal-header"><h5 class="modal-title">Submissions — ${title}</h5><button type="button" class="btn-close" onclick="this.closest('.modal').parentElement.remove()"></button></div>
             <div class="modal-body" style="max-height:500px;overflow-y:auto;">
-              ${!data.submissions.length ? EmptyState('bi-inbox','No submissions yet','Students haven\'t submitted yet.') :
-                `<table class="table lms-table">
+              ${!data.submissions.length ? EmptyState('bi-inbox', 'No submissions yet', 'Students haven\'t submitted yet.') :
+        `<table class="table lms-table">
                   <thead><tr><th>Student</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Action</th></tr></thead>
-                  <tbody>${data.submissions.map(s=>`
+                  <tbody>${data.submissions.map(s => `
                     <tr>
-                      <td>${s.student?.firstName||''} ${s.student?.lastName||''}<div class="text-muted small">${s.student?.email||''}</div></td>
+                      <td>${s.student?.firstName || ''} ${s.student?.lastName || ''}<div class="text-muted small">${s.student?.email || ''}</div></td>
                       <td class="text-muted small">${new Date(s.submittedAt).toLocaleString()}</td>
-                      <td>${Badge(s.status, s.status==='graded'?'success':s.status==='late'?'danger':'warning')}</td>
+                      <td>${Badge(s.status, s.status === 'graded' ? 'success' : s.status === 'late' ? 'danger' : 'warning')}</td>
                       <td>${s.marks !== null ? s.marks : '—'}</td>
                       <td>
                         ${s.fileUrl ? `<a href="http://localhost:5000${s.fileUrl}" target="_blank" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-download"></i></a>` : ''}
-                        <button class="btn btn-sm btn-primary" onclick="document.querySelector('.modal.show:not(.lms-modal .modal)').parentElement.remove();openGradeModal('${s.id}',${s.marks||0},'${s.student?.email||''}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-primary" onclick="document.querySelector('.modal.show:not(.lms-modal .modal)').parentElement.remove();openGradeModal('${s.id}',${s.marks || 0},'${s.student?.email || ''}')"><i class="bi bi-pencil"></i></button>
                       </td>
                     </tr>`).join('')}
                   </tbody></table>`}
@@ -1637,31 +1637,31 @@ async function populateCourseFilterForQuizzes() {
     sels.forEach(id => {
       const sel = document.getElementById(id);
       if (!sel) return;
-      data.courses.forEach(c => { const o=document.createElement('option'); o.value=c.id; o.textContent=c.title; sel.appendChild(o); });
+      data.courses.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.title; sel.appendChild(o); });
     });
-  } catch {}
+  } catch { }
 }
 
 async function loadQuizzes() {
   const courseId = document.getElementById('quiz-course-filter')?.value || '';
   const list = document.getElementById('quizzes-list');
   if (!list) return;
-  list.innerHTML = [1,2].map(()=>`<div class="col-md-6">${SkeletonCard()}</div>`).join('');
+  list.innerHTML = [1, 2].map(() => `<div class="col-md-6">${SkeletonCard()}</div>`).join('');
   try {
     const params = new URLSearchParams();
     if (courseId) params.append('courseId', courseId);
     const data = await apiRequest(`/quizzes?${params}`);
     if (!data.quizzes.length) {
-      list.innerHTML = `<div class="col-12">${EmptyState('bi-patch-question','No quizzes found','Create your first quiz!')}</div>`;
+      list.innerHTML = `<div class="col-12">${EmptyState('bi-patch-question', 'No quizzes found', 'Create your first quiz!')}</div>`;
       return;
     }
     const isStudent = state.user?.role === 'student';
     list.innerHTML = data.quizzes.map(q => {
       const attempt = q.myAttempt;
       const statusBadge = isStudent
-        ? (attempt?.status === 'submitted' ? Badge(attempt.passed?`Passed (${attempt.score})`:`Failed (${attempt.score})`, attempt.passed?'success':'danger')
-           : attempt?.status === 'in_progress' ? Badge('In Progress','warning')
-           : Badge('Not Started','primary'))
+        ? (attempt?.status === 'submitted' ? Badge(attempt.passed ? `Passed (${attempt.score})` : `Failed (${attempt.score})`, attempt.passed ? 'success' : 'danger')
+          : attempt?.status === 'in_progress' ? Badge('In Progress', 'warning')
+            : Badge('Not Started', 'primary'))
         : Badge(q.isPublished ? 'Published' : 'Draft', q.isPublished ? 'success' : 'warning');
 
       return `
@@ -1735,9 +1735,9 @@ window.addQuizQuestion = addQuizQuestion;
 
 function renderMCQOptions() {
   return `<label class="form-label small">Options (check correct)</label>
-    ${[0,1,2,3].map(i=>`<div class="d-flex align-items-center gap-2 mb-1">
+    ${[0, 1, 2, 3].map(i => `<div class="d-flex align-items-center gap-2 mb-1">
       <input type="radio" name="correct_opt_new" value="${i}" class="q-correct">
-      <input type="text" class="form-control form-control-sm q-option-text" placeholder="Option ${i+1}">
+      <input type="text" class="form-control form-control-sm q-option-text" placeholder="Option ${i + 1}">
     </div>`).join('')}`;
 }
 
@@ -1751,9 +1751,9 @@ function renderTrueFalseOptions() {
 
 function renderMultiOptions() {
   return `<label class="form-label small">Options (check all correct)</label>
-    ${[0,1,2,3].map(i=>`<div class="d-flex align-items-center gap-2 mb-1">
+    ${[0, 1, 2, 3].map(i => `<div class="d-flex align-items-center gap-2 mb-1">
       <input type="checkbox" class="q-correct" value="${i}">
-      <input type="text" class="form-control form-control-sm q-option-text" placeholder="Option ${i+1}">
+      <input type="text" class="form-control form-control-sm q-option-text" placeholder="Option ${i + 1}">
     </div>`).join('')}`;
 }
 
@@ -1793,7 +1793,7 @@ async function saveQuiz() {
       if (checked) correctAnswers = [parseInt(checked.value)];
     }
 
-    if (text) questions.push({ questionText: text, type, options: type==='truefalse' ? ['True','False'] : options, correctAnswers, marks });
+    if (text) questions.push({ questionText: text, type, options: type === 'truefalse' ? ['True', 'False'] : options, correctAnswers, marks });
   }
 
   const payload = {
@@ -1858,7 +1858,7 @@ async function startQuiz(quizId, title, duration) {
     // Render questions
     body.innerHTML = quiz.questions.map((q, i) => `
       <div class="mb-4 p-3 rounded" style="background:var(--bg-color);">
-        <div class="fw-bold mb-2">Q${i+1}. ${q.questionText} <span class="badge badge-primary ms-2">${q.marks} mark${q.marks>1?'s':''}</span></div>
+        <div class="fw-bold mb-2">Q${i + 1}. ${q.questionText} <span class="badge badge-primary ms-2">${q.marks} mark${q.marks > 1 ? 's' : ''}</span></div>
         <div class="d-flex flex-column gap-2">
           ${(q.options || []).map((opt, oi) => `
             <label class="d-flex align-items-center gap-2 p-2 rounded hover-bg" style="cursor:pointer;">
@@ -1874,8 +1874,8 @@ async function startQuiz(quizId, title, duration) {
     if (state.quizTimer) clearInterval(state.quizTimer);
     state.quizTimer = setInterval(() => {
       seconds--;
-      const m = Math.floor(seconds / 60).toString().padStart(2,'0');
-      const s = (seconds % 60).toString().padStart(2,'0');
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
       if (timerEl) {
         timerEl.textContent = `${m}:${s}`;
         if (seconds <= 60) timerEl.style.color = '#ef4444';
@@ -1933,11 +1933,11 @@ async function viewQuizResults(quizId, title) {
       <div style="max-height:350px;overflow-y:auto;">
         <table class="table lms-table">
           <thead><tr><th>Student</th><th>Score</th><th>Status</th><th>Submitted</th></tr></thead>
-          <tbody>${data.attempts.map(a=>`
+          <tbody>${data.attempts.map(a => `
             <tr>
-              <td>${a.student?.firstName||''} ${a.student?.lastName||''}</td>
+              <td>${a.student?.firstName || ''} ${a.student?.lastName || ''}</td>
               <td class="fw-bold">${a.score}</td>
-              <td>${Badge(a.passed?'Passed':'Failed', a.passed?'success':'danger')}</td>
+              <td>${Badge(a.passed ? 'Passed' : 'Failed', a.passed ? 'success' : 'danger')}</td>
               <td class="text-muted small">${a.submittedAt ? new Date(a.submittedAt).toLocaleString() : '—'}</td>
             </tr>`).join('')}
           </tbody>
@@ -1959,8 +1959,8 @@ async function viewMyResult(attemptId) {
             <button class="btn-close ms-auto" onclick="this.closest('.modal').parentElement.remove()"></button>
             <div style="font-size:3rem;">${a.passed ? '🎉' : '😞'}</div>
             <h4 class="fw-bold mt-2">${a.quiz?.title}</h4>
-            <div class="text-h1 my-3" style="color:${a.passed?'var(--success)':'var(--danger)'};">${a.score} / ${a.quiz?.totalMarks}</div>
-            <div>${Badge(a.passed?'PASSED':'FAILED', a.passed?'success':'danger')}</div>
+            <div class="text-h1 my-3" style="color:${a.passed ? 'var(--success)' : 'var(--danger)'};">${a.score} / ${a.quiz?.totalMarks}</div>
+            <div>${Badge(a.passed ? 'PASSED' : 'FAILED', a.passed ? 'success' : 'danger')}</div>
             <p class="text-muted mt-3 mb-0">Submitted: ${new Date(a.submittedAt).toLocaleString()}</p>
           </div>
         </div>
@@ -1984,10 +1984,10 @@ async function loadAnalytics() {
 
     if (role === 'admin') {
       sc.innerHTML = `
-        ${StatCard('bi-people','Total Users', data.stats.totalUsers, '#4f46e5')}
-        ${StatCard('bi-book','Active Courses', data.stats.totalCourses, '#10b981')}
-        ${StatCard('bi-file-earmark-text','Assignments', data.stats.totalAssignments, '#f59e0b')}
-        ${StatCard('bi-patch-question','Published Quizzes', data.stats.totalQuizzes, '#6366f1')}`;
+        ${StatCard('bi-people', 'Total Users', data.stats.totalUsers, '#4f46e5')}
+        ${StatCard('bi-book', 'Active Courses', data.stats.totalCourses, '#10b981')}
+        ${StatCard('bi-file-earmark-text', 'Assignments', data.stats.totalAssignments, '#f59e0b')}
+        ${StatCard('bi-patch-question', 'Published Quizzes', data.stats.totalQuizzes, '#6366f1')}`;
 
       if (data.attendanceTrend) {
         const chartEl = document.getElementById('analytics-attendance-chart');
@@ -1995,15 +1995,15 @@ async function loadAnalytics() {
       }
     } else if (role === 'teacher') {
       sc.innerHTML = `
-        ${StatCard('bi-book','My Courses', data.courses.length, '#4f46e5')}
-        ${StatCard('bi-file-earmark-text','Assignments', data.totalAssignments, '#10b981')}
-        ${StatCard('bi-patch-question','Quizzes', data.totalQuizzes, '#f59e0b')}`;
+        ${StatCard('bi-book', 'My Courses', data.courses.length, '#4f46e5')}
+        ${StatCard('bi-file-earmark-text', 'Assignments', data.totalAssignments, '#10b981')}
+        ${StatCard('bi-patch-question', 'Quizzes', data.totalQuizzes, '#f59e0b')}`;
     } else {
       sc.innerHTML = `
-        ${StatCard('bi-journal-album','Enrollments', data.stats.enrollments, '#4f46e5')}
-        ${StatCard('bi-upload','Submissions', data.stats.submissions, '#10b981')}
-        ${StatCard('bi-award','Avg Marks', `${data.averageMarks}%`, '#f59e0b')}
-        ${StatCard('bi-check-circle','Quizzes Passed', data.quizzesPassed, '#6366f1')}`;
+        ${StatCard('bi-journal-album', 'Enrollments', data.stats.enrollments, '#4f46e5')}
+        ${StatCard('bi-upload', 'Submissions', data.stats.submissions, '#10b981')}
+        ${StatCard('bi-award', 'Avg Marks', `${data.averageMarks}%`, '#f59e0b')}
+        ${StatCard('bi-check-circle', 'Quizzes Passed', data.quizzesPassed, '#6366f1')}`;
     }
   } catch (err) { console.error(err); }
 }
@@ -2033,7 +2033,7 @@ async function loadAuditLogs() {
         <td class="text-primary small">${l.userEmail}</td>
         <td><span class="badge badge-primary">${l.action}</span></td>
         <td class="text-muted small">${l.entity || '—'}</td>
-        <td class="text-muted small">${l.details ? JSON.stringify(l.details).substring(0,60) + '...' : '—'}</td>
+        <td class="text-muted small">${l.details ? JSON.stringify(l.details).substring(0, 60) + '...' : '—'}</td>
         <td class="text-muted small">${l.ipAddress || '—'}</td>
       </tr>`).join('');
 
@@ -2041,9 +2041,9 @@ async function loadAuditLogs() {
     if (pag) {
       pag.innerHTML = `<span class="text-muted small">Total: ${data.total}</span>
         <div class="btn-group btn-group-sm ms-auto">
-          <button class="btn btn-outline-secondary" onclick="auditPage=Math.max(1,auditPage-1);loadAuditLogs()" ${auditPage<=1?'disabled':''}>‹ Prev</button>
+          <button class="btn btn-outline-secondary" onclick="auditPage=Math.max(1,auditPage-1);loadAuditLogs()" ${auditPage <= 1 ? 'disabled' : ''}>‹ Prev</button>
           <button class="btn btn-outline-secondary disabled">Page ${data.page}/${data.pages}</button>
-          <button class="btn btn-outline-secondary" onclick="auditPage++;loadAuditLogs()" ${auditPage>=data.pages?'disabled':''}>Next ›</button>
+          <button class="btn btn-outline-secondary" onclick="auditPage++;loadAuditLogs()" ${auditPage >= data.pages ? 'disabled' : ''}>Next ›</button>
         </div>`;
     }
   } catch (err) { tbody.innerHTML = `<tr><td colspan="6" class="text-danger">${err.message}</td></tr>`; }
@@ -2058,24 +2058,37 @@ async function loadActiveMeetings() {
     const data = await apiRequest('/live/meetings');
     state.activeMeetings = data.meetings || [];
     if (!state.activeMeetings.length) {
-      container.innerHTML = EmptyState('bi-camera-video-off','No active sessions','Start a class to see it here.');
+      container.innerHTML = EmptyState('bi-camera-video-off', 'No active sessions', 'Start a class to see it here.');
       return;
     }
     container.innerHTML = state.activeMeetings.map(m => {
       const isTeacher = state.user?.role === 'teacher' || state.user?.role === 'admin';
+      const courseName = m.courseName || (m.course ? m.course.title : 'General');
+      const teacherName = m.teacherName || (m.teacher ? `${m.teacher.firstName} ${m.teacher.lastName || ''}`.trim() : 'Instructor');
+      const startedTime = new Date(m.startedAt || m.startTime || m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       return `
-      <div class="d-flex align-items-center justify-content-between p-3 rounded mb-2" style="background:var(--bg-color);">
+      <div class="d-flex align-items-center justify-content-between p-3 rounded mb-2 border" style="background:var(--card-bg, #ffffff); border-color:var(--border-color);">
         <div>
-          <div class="fw-600"><span class="text-danger me-2">●</span>${m.name}</div>
-          <div class="text-muted small">${m.meetingId} · Started ${new Date(m.createdAt || m.startedAt).toLocaleTimeString()} · Participants: <strong class="text-primary">${m.participantCount || 0}</strong></div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-danger d-flex align-items-center gap-1" style="font-size:0.75rem;">
+              <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true" style="width: 8px; height: 8px;"></span>
+              LIVE
+            </span>
+            <span class="text-primary fw-bold small">${escapeHtml(courseName)}</span>
+          </div>
+          <h5 class="fw-bold mb-1 fs-6">${escapeHtml(m.meetingName || m.name)}</h5>
+          <div class="text-muted small">
+            <i class="bi bi-person me-1"></i>${escapeHtml(teacherName)} &middot; 
+            <i class="bi bi-clock me-1"></i>Started at ${startedTime}
+          </div>
         </div>
         <div class="d-flex gap-2">
-          <button class="btn btn-primary btn-sm" onclick="joinMeeting('${m.meetingId}','${m.name}')">Join</button>
+          <button class="btn btn-primary btn-sm" onclick="joinMeeting('${m.meetingId}','${escapeHtml(m.meetingName || m.name).replace(/'/g, "\\'")}')">Join</button>
           ${isTeacher ? `<button class="btn btn-danger btn-sm" onclick="endMeeting('${m.meetingId}')">End</button>` : ''}
         </div>
       </div>`;
     }).join('');
-  } catch (err) { container.innerHTML = EmptyState('bi-camera-video','Ready','Start or join a live class.'); }
+  } catch (err) { container.innerHTML = EmptyState('bi-camera-video', 'Ready', 'Start or join a live class.'); }
 }
 
 async function loadRecordings() {
@@ -2084,7 +2097,7 @@ async function loadRecordings() {
   try {
     const data = await apiRequest('/live/recordings');
     if (!data.recordings.length) {
-      list.innerHTML = EmptyState('bi-collection-play','No recordings','Recordings from past classes appear here.');
+      list.innerHTML = EmptyState('bi-collection-play', 'No recordings', 'Recordings from past classes appear here.');
       return;
     }
     list.innerHTML = data.recordings.map(r => `
@@ -2095,7 +2108,7 @@ async function loadRecordings() {
         </div>
         <a href="${r.playbackUrl}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="bi bi-play me-1"></i>Play</a>
       </div>`).join('');
-  } catch {}
+  } catch { }
 }
 
 async function startClass() {
@@ -2105,7 +2118,7 @@ async function startClass() {
   try {
     const data = await apiRequest('/live/create', 'POST', { name });
     const fullName = (state.user ? `${state.user.firstName} ${state.user.lastName || ''}`.trim() : '') || 'Anonymous';
-    const joinData = await apiRequest('/live/join', 'POST', { meetingId: data.meeting.meetingId, fullName, role: 'moderator' });
+    const joinData = await apiRequest('/live/join', 'POST', { meetingId: data.meeting.meetingId, fullName, role: 'MODERATOR' });
     window.open(joinData.joinUrl, '_blank');
     await loadActiveMeetings();
   } catch (err) { showToast(err.message, 'error'); }
@@ -2123,7 +2136,7 @@ async function openJoinModal() {
     list.innerHTML = state.activeMeetings.map(m => `
       <div class="d-flex justify-content-between align-items-center p-2 border rounded mb-2">
         <div><div class="fw-500">${m.name}</div><div class="text-muted small">${m.meetingId}</div></div>
-        <button class="btn btn-sm btn-primary" onclick="joinMeeting('${m.meetingId}','${m.name}')">Join</button>
+        <button class="btn btn-sm btn-primary" onclick="joinMeeting('${m.meetingId}','${escapeHtml(m.meetingName || m.name).replace(/'/g, "\\'")}')">Join</button>
       </div>`).join('');
   }
   new bootstrap.Modal(document.getElementById('join-modal')).show();
@@ -2133,7 +2146,7 @@ window.openJoinModal = openJoinModal;
 async function joinMeeting(meetingId, name) {
   try {
     const fullName = (state.user ? `${state.user.firstName} ${state.user.lastName || ''}`.trim() : '') || 'Anonymous';
-    const role = (state.user?.role === 'teacher' || state.user?.role === 'admin') ? 'moderator' : 'attendee';
+    const role = (state.user?.role === 'teacher' || state.user?.role === 'admin') ? 'MODERATOR' : 'VIEWER';
     const data = await apiRequest('/live/join', 'POST', { meetingId, fullName, role });
     window.open(data.joinUrl, '_blank');
     bootstrap.Modal.getInstance(document.getElementById('join-modal'))?.hide();
@@ -2195,13 +2208,13 @@ async function loadCoursesForLiveSelect() {
     const params = new URLSearchParams({ archived: 'false' });
     if (role === 'student') params.append('studentId', state.user.id);
     const data = await apiRequest(`/courses?${params}`);
-    
+
     if (!data.courses || !data.courses.length) {
       select.innerHTML = '<option value="">No courses available</option>';
       return;
     }
-    
-    select.innerHTML = '<option value="">Select a Course</option>' + 
+
+    select.innerHTML = '<option value="">Select a Course</option>' +
       data.courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
   } catch (err) {
     select.innerHTML = `<option value="">Error loading courses: ${err.message}</option>`;
@@ -2224,7 +2237,7 @@ async function handleCreateLiveClass(event) {
 
   try {
     const startTime = new Date(`${date}T${time}`);
-    
+
     const data = await apiRequest('/live/create', 'POST', {
       name,
       courseId,
@@ -2234,7 +2247,7 @@ async function handleCreateLiveClass(event) {
     });
 
     showToast('Live class successfully scheduled!', 'success');
-    
+
     const fullName = (state.user ? `${state.user.firstName} ${state.user.lastName || ''}`.trim() : '') || 'Anonymous';
     const joinData = await apiRequest('/live/join', 'POST', {
       meetingId: data.meeting.meetingId,
@@ -2261,24 +2274,7 @@ function handleLiveMeetingsUpdate(meetings) {
       match.isRunning = update.isRunning;
     }
   });
-  
-  const container = document.getElementById('active-meetings-container');
-  if (container && state.activeMeetings.length > 0) {
-    container.innerHTML = state.activeMeetings.map(m => {
-      const isTeacher = state.user?.role === 'teacher' || state.user?.role === 'admin';
-      return `
-      <div class="d-flex align-items-center justify-content-between p-3 rounded mb-2" style="background:var(--bg-color);">
-        <div>
-          <div class="fw-600"><span class="text-danger me-2">●</span>${m.name}</div>
-          <div class="text-muted small">${m.meetingId} · Started ${new Date(m.createdAt || m.startedAt).toLocaleTimeString()} · Participants: <strong class="text-primary">${m.participantCount || 0}</strong></div>
-        </div>
-        <div class="d-flex gap-2">
-          <button class="btn btn-primary btn-sm" onclick="joinMeeting('${m.meetingId}','${m.name}')">Join</button>
-          ${isTeacher ? `<button class="btn btn-danger btn-sm" onclick="endMeeting('${m.meetingId}')">End</button>` : ''}
-        </div>
-      </div>`;
-    }).join('');
-  }
+  loadActiveMeetings();
 }
 window.handleLiveMeetingsUpdate = handleLiveMeetingsUpdate;
 
@@ -2302,14 +2298,14 @@ function renderBarChart(data) {
     ${data.map(d => `
       <div class="d-flex flex-column align-items-center flex-1 gap-1">
         <span class="text-muted" style="font-size:0.7rem;">${d.count}</span>
-        <div style="width:100%;height:${Math.max(10,Math.round((d.count/max)*160))}px;background:linear-gradient(180deg,var(--primary),var(--primary-hover));border-radius:4px 4px 0 0;transition:height 0.5s ease;"></div>
+        <div style="width:100%;height:${Math.max(10, Math.round((d.count / max) * 160))}px;background:linear-gradient(180deg,var(--primary),var(--primary-hover));border-radius:4px 4px 0 0;transition:height 0.5s ease;"></div>
         <span class="text-muted" style="font-size:0.7rem;">${d.date}</span>
       </div>`).join('')}
   </div>`;
 }
 
 function ProgressBar(label, value, total, color) {
-  const pct = total > 0 ? Math.round((value/total)*100) : 0;
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   return `<div class="d-flex justify-content-between mb-1">
     <span class="small">${label}</span><span class="small fw-bold">${value} (${pct}%)</span></div>
     <div class="progress mb-2" style="height:8px;"><div class="progress-bar" style="width:${pct}%;background:${color};"></div></div>`;
@@ -2506,7 +2502,7 @@ let activeAiBubble = null;
 function handleAiTypingStart() {
   const indicator = document.getElementById('ai-chat-typing');
   if (indicator) indicator.classList.remove('d-none');
-  
+
   const bubble = document.getElementById('current-ai-response-bubble');
   if (bubble) {
     bubble.textContent = '';
@@ -2528,7 +2524,7 @@ window.handleAiChunk = handleAiChunk;
 function handleAiTypingStop(response, error) {
   const indicator = document.getElementById('ai-chat-typing');
   if (indicator) indicator.classList.add('d-none');
-  
+
   const bubble = activeAiBubble || document.getElementById('current-ai-response-bubble');
   if (bubble) {
     if (error) {
@@ -2550,25 +2546,25 @@ function addQuizQuestionWithData(qData) {
   const div = document.createElement('div');
   div.className = 'card p-3 animate-fade-in';
   div.id = `question-block-${qId}`;
-  
+
   let optionsHtml = '';
   if (qData.type === 'truefalse') {
     optionsHtml = `<label class="form-label small">Correct Answer</label>
       <div class="d-flex gap-3">
-        <div class="form-check"><input type="radio" class="form-check-input q-correct" name="correct_tf_${qId}" value="0" ${qData.correctAnswers.includes(0)?'checked':''}><label class="form-check-label">True</label></div>
-        <div class="form-check"><input type="radio" class="form-check-input q-correct" name="correct_tf_${qId}" value="1" ${qData.correctAnswers.includes(1)?'checked':''}><label class="form-check-label">False</label></div>
+        <div class="form-check"><input type="radio" class="form-check-input q-correct" name="correct_tf_${qId}" value="0" ${qData.correctAnswers.includes(0) ? 'checked' : ''}><label class="form-check-label">True</label></div>
+        <div class="form-check"><input type="radio" class="form-check-input q-correct" name="correct_tf_${qId}" value="1" ${qData.correctAnswers.includes(1) ? 'checked' : ''}><label class="form-check-label">False</label></div>
       </div>`;
   } else if (qData.type === 'multi') {
     optionsHtml = `<label class="form-label small">Options (check all correct)</label>
-      ${[0,1,2,3].map(i=>`<div class="d-flex align-items-center gap-2 mb-1">
-        <input type="checkbox" class="q-correct" value="${i}" ${qData.correctAnswers.includes(i)?'checked':''}>
-        <input type="text" class="form-control form-control-sm q-option-text" placeholder="Option ${i+1}" value="${qData.options[i] || ''}">
+      ${[0, 1, 2, 3].map(i => `<div class="d-flex align-items-center gap-2 mb-1">
+        <input type="checkbox" class="q-correct" value="${i}" ${qData.correctAnswers.includes(i) ? 'checked' : ''}>
+        <input type="text" class="form-control form-control-sm q-option-text" placeholder="Option ${i + 1}" value="${qData.options[i] || ''}">
       </div>`).join('')}`;
   } else {
     optionsHtml = `<label class="form-label small">Options (check correct)</label>
-      ${[0,1,2,3].map(i=>`<div class="d-flex align-items-center gap-2 mb-1">
-        <input type="radio" name="correct_opt_${qId}" value="${i}" class="q-correct" ${qData.correctAnswers.includes(i)?'checked':''}>
-        <input type="text" class="form-control form-control-sm q-option-text" placeholder="Option ${i+1}" value="${qData.options[i] || ''}">
+      ${[0, 1, 2, 3].map(i => `<div class="d-flex align-items-center gap-2 mb-1">
+        <input type="radio" name="correct_opt_${qId}" value="${i}" class="q-correct" ${qData.correctAnswers.includes(i) ? 'checked' : ''}>
+        <input type="text" class="form-control form-control-sm q-option-text" placeholder="Option ${i + 1}" value="${qData.options[i] || ''}">
       </div>`).join('')}`;
   }
 
@@ -2582,9 +2578,9 @@ function addQuizQuestionWithData(qData) {
       <div class="col-md-4">
         <label class="form-label small">Type</label>
         <select class="form-select q-type" onchange="updateQuestionOptions(this,'${qId}')">
-          <option value="mcq" ${qData.type==='mcq'?'selected':''}>Multiple Choice (MCQ)</option>
-          <option value="multi" ${qData.type==='multi'?'selected':''}>Multi-Select</option>
-          <option value="truefalse" ${qData.type==='truefalse'?'selected':''}>True / False</option>
+          <option value="mcq" ${qData.type === 'mcq' ? 'selected' : ''}>Multiple Choice (MCQ)</option>
+          <option value="multi" ${qData.type === 'multi' ? 'selected' : ''}>Multi-Select</option>
+          <option value="truefalse" ${qData.type === 'truefalse' ? 'selected' : ''}>True / False</option>
         </select>
       </div>
       <div class="col-md-2"><label class="form-label small">Marks</label><input type="number" class="form-control q-marks" value="${qData.marks || 1}"></div>
@@ -2656,17 +2652,17 @@ async function runAIEvaluation() {
       const f = res.feedback;
       document.getElementById('ai-suggested-marks').textContent = f.suggestedMarks;
       document.getElementById('ai-plagiarism-score').textContent = Math.round(f.plagiarismScore * 100) + '%';
-      
+
       const weakDiv = document.getElementById('ai-weak-sections');
       if (weakDiv) {
         weakDiv.innerHTML = (f.weakSections || []).map(s => `<span class="badge bg-danger-light text-danger border border-danger mb-1 me-1">${s}</span>`).join('') || '<span class="text-muted small">None identified</span>';
       }
-      
+
       document.getElementById('ai-detailed-feedback').textContent = f.feedback;
-      
+
       state.suggestedGrade = f.suggestedMarks;
       state.suggestedFeedback = f.feedback;
-      
+
       resultsDiv.classList.remove('d-none');
       if (applyBtn) applyBtn.style.display = 'block';
     } else {

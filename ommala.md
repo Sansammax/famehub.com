@@ -21,16 +21,13 @@ By default, the backend falls back to SQLite (`database.sqlite`). For production
 ---
 
 ## 🎥 2. BigBlueButton (BBB) Integration
-The project currently uses a simulated mock classroom. To enable real video conferencing and classrooms:
+The project connects directly to the official BigBlueButton API.
 
-- [ ] **Obtain BBB Credentials:** Set up an active BigBlueButton server (or use a hosted provider) and retrieve the API endpoint URL and shared security secret.
-- [ ] **Update Credentials:** Disable Simulator Mode and add your production credentials to `backend/.env`:
+- [ ] **Verify BBB Credentials:** Check `backend/.env` to ensure the API URL and secret are correct:
   ```ini
-  BBB_URL=https://your-bbb-domain.com/bigbluebutton/api
-  BBB_SECRET=your_actual_shared_secret_here
-  BBB_DEMO_MODE=false
+  BBB_URL=https://app.bbbserver.com/bbb-integration-v2/60a53a74-f9df-496a-9ae1-ca3079f26a7c/api
+  BBB_SECRET=118c788f-d02e-444a-bbbe-055235f0100b
   ```
-- [ ] **Configure Webhooks:** Ensure your BBB server is configured to send webhook callbacks back to the FameHub server for real-time attendance tracking.
 
 ---
 

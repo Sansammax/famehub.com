@@ -29,6 +29,9 @@ export const protect = async (req, res, next) => {
     }
 
     req.user = user;
+    if (decoded && decoded.role) {
+      req.user.role = decoded.role;
+    }
     next();
   } catch (error) {
     return res.status(401).json({ 
@@ -41,6 +44,7 @@ export const protect = async (req, res, next) => {
 // Enforces role-based permissions
 export const authorize = (...roles) => {
   return (req, res, next) => {
+    console.log("Authenticated User:", req.user);
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,

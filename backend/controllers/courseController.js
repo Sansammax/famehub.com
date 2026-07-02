@@ -15,7 +15,12 @@ export const listCourses = async (req, res, next) => {
       const where = { isArchived: archived === 'true' };
       if (search) where.title = { [Op.like]: `%${search}%` };
       if (department) where.departmentId = department;
-      if (teacherId) where.teacherId = teacherId;
+      
+      if (req.user && req.user.role === 'teacher') {
+        where.teacherId = req.user.id;
+      } else if (teacherId) {
+        where.teacherId = teacherId;
+      }
 
       let include = [
         { model: User, as: 'teacher', attributes: ['id', 'email', 'firstName', 'lastName'] },

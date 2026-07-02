@@ -11,7 +11,7 @@ graph TD
   subgraph Frontend ["Client Browser"]
     SPA["Vanilla JS SPA (Vite)"]
     WSClient["WebSocket Client"]
-    UIControls["BBB Simulator / Video Canvas"]
+    UIControls["BBB Client / Video Canvas"]
   end
 
   subgraph Backend ["Node.js / Express Server"]

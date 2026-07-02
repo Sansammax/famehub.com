@@ -12,6 +12,9 @@ let createdQuizId = '';
 
 beforeAll(async () => {
   await initDatabase();
+  const { User, Quiz } = await import('../models/index.js');
+  await User.destroy({ where: { email: 'jestuser@famehub.edu' } });
+  await Quiz.destroy({ where: { title: 'Jest Comprehensive Quiz' } });
 
   // Login and capture tokens
   const [adminRes, teacherRes, studentRes] = await Promise.all([
@@ -33,7 +36,7 @@ beforeAll(async () => {
   if (coursesRes.body.courses && coursesRes.body.courses.length > 0) {
     courseId = coursesRes.body.courses[0].id;
   }
-});
+}, 30000);
 
 describe('User Management API Extended', () => {
   test('POST /api/users - admin can create a new user', async () => {

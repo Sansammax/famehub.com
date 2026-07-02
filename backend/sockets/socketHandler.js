@@ -14,7 +14,7 @@ const clients = new Map();
 const handleAiStreamRequest = async (ws, data) => {
   const { message, courseId } = data;
   const userId = ws.userId;
-  
+
   if (!userId) {
     ws.send(JSON.stringify({ type: 'ERROR', message: 'Unauthorized socket connection' }));
     return;
@@ -158,7 +158,7 @@ export const initWebSocket = (server) => {
       try {
         const parsed = JSON.parse(message);
         logger.info(`[WS] Message from ${userEmail}:`, parsed);
-        
+
         if (parsed.type === 'AI_STREAM_REQUEST') {
           await handleAiStreamRequest(ws, parsed.data);
         }
@@ -231,15 +231,16 @@ export const initWebSocket = (server) => {
       // 2. Live meetings update
       const { Meeting } = await import('../models/Meeting.js');
       const { BigBlueButtonService } = await import('../services/BigBlueButtonService.js');
-      
-      const activeMeetings = await Meeting.findAll({ where: { isRunning: true } });
+
+      const activeMeetings = await Meeting.findAll({ where: { isActive: true } });
       const updates = [];
 
       for (const m of activeMeetings) {
         const info = await BigBlueButtonService.getMeetingInfo(m.meetingId, m.moderatorPW);
-        
-        if (!info.isRunning && !BigBlueButtonService.isDemoMode) {
+
+        if (!info.isRunning) {
           m.isRunning = false;
+          m.isActive = false;
           m.endedAt = new Date();
           await m.save();
         } else {

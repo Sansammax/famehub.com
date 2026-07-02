@@ -27,7 +27,7 @@ The teacher dashboard dynamically displays metrics reflecting the active session
 ### 1. Attending Live Lectures
 1. Log in using `student@famehub.edu` or custom student credentials.
 2. The homepage displays active classes created by your enrolled course teachers.
-3. Click **Join Room** to launch the simulator or external classroom window.
+3. Click **Join Room** to launch the BigBlueButton classroom window.
 4. To stay registered as "Present", stay connected until the threshold timer completes (default: 60s).
 
 ### 2. View Grades and Attendance

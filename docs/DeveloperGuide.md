@@ -57,4 +57,3 @@ To simplify development:
 - **No PostgreSQL?** The server logs warning and starts `database.sqlite` automatically.
 - **No Redis?** The server caches items in local memory with expiring keys.
 - **No Kafka?** The server utilizes Node's `EventEmitter` to process messages internally.
-- **No BBB Server?** The BigBlueButton Service launches an HTML class simulator in the browser so you can trigger student joins and leaves and test the attendance/caching flows out-of-the-box.

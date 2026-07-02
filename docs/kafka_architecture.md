@@ -11,7 +11,7 @@ The following topics partition specific business domain contexts:
 | Topic | Event Types | Producers | Consumers |
 | :--- | :--- | :--- | :--- |
 | `user-events` | `User Login`, `User Signup` | `authController` | Audit Loggers, Security Monitors |
-| `live-class-events` | `Teacher Started Class`, `Student Joined`, `Student Left`, `Meeting Ended` | `liveController`, Simulator | `AttendanceService`, `NotificationService` |
+| `live-class-events` | `Teacher Started Class`, `Student Joined`, `Student Left`, `Meeting Ended` | `liveController`, BigBlueButton API | `AttendanceService`, `NotificationService` |
 | `attendance-events` | `Attendance Marked` | `AttendanceService` | `NotificationService`, Analytics Engines |
 | `course-events` | `Course Created` | Syllabus Manager | `NotificationService` |
 | `assignment-events` | `Assignment Uploaded`, `Assignment Submitted` | File Controllers | `NotificationService` |

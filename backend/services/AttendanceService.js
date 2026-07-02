@@ -35,7 +35,7 @@ class AttendanceServiceClass {
   async handleJoin(userEmail, userName, meetingId, role = 'student') {
     try {
       console.log(`[AttendanceService] Join event: User "${userEmail}" joined meeting "${meetingId}"`);
-      
+
       // Look for existing record
       let record = await Attendance.findOne({
         where: { userEmail, meetingId }
@@ -61,7 +61,7 @@ class AttendanceServiceClass {
         await record.save();
         console.log(`[AttendanceService] Updated joinTime (re-join) for ${userEmail}.`);
       }
-      
+
       // Publish student join to general subscribers if student
       if (role === 'student') {
         // Send notification event of student join
@@ -79,7 +79,7 @@ class AttendanceServiceClass {
   async handleLeave(userEmail, meetingId) {
     try {
       console.log(`[AttendanceService] Leave event: User "${userEmail}" left meeting "${meetingId}"`);
-      
+
       const record = await Attendance.findOne({
         where: { userEmail, meetingId }
       });
@@ -92,10 +92,10 @@ class AttendanceServiceClass {
       const leaveTime = new Date();
       // Calculate duration for this session
       const sessionDuration = Math.round((leaveTime.getTime() - record.joinTime.getTime()) / 1000);
-      
+
       record.leaveTime = leaveTime;
       record.durationSeconds = (record.durationSeconds || 0) + sessionDuration;
-      
+
       // Determine status
       if (record.durationSeconds >= THRESHOLD) {
         record.status = 'Present';
@@ -149,9 +149,9 @@ class AttendanceServiceClass {
         // Save database record with current updated duration
         record.durationSeconds = totalDuration;
         await record.save();
-        
+
         console.log(`[AttendanceService] Student ${record.userEmail} crossed threshold duration of ${THRESHOLD}s while active. Status set to PRESENT.`);
-        
+
         // Publish Event
         await KafkaProducer.publishEvent('attendance-events', 'Attendance Marked', {
           userEmail: record.userEmail,
@@ -175,9 +175,9 @@ class AttendanceServiceClass {
 
       for (const meeting of activeMeetings) {
         const info = await BigBlueButtonService.getMeetingInfo(meeting.meetingId, meeting.moderatorPW);
-        
-        // If the meeting is ended on BBB (and we are not in mock/demo mode), mark as ended
-        if (!info.isRunning && !BigBlueButtonService.isDemoMode) {
+
+        // If the meeting is ended on BBB, mark as ended
+        if (!info.isRunning) {
           meeting.isRunning = false;
           meeting.endedAt = new Date();
           await meeting.save();

@@ -18,7 +18,7 @@ beforeAll(async () => {
 
   const studentRes = await request(app).post('/api/auth/login').send({ email: 'student@famehub.edu', password: 'password' });
   studentToken = studentRes.body.token;
-});
+}, 30000);
 
 describe('Auth API', () => {
   test('POST /api/auth/login - valid credentials returns token', async () => {

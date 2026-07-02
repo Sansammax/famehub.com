@@ -109,7 +109,7 @@ Computes signature checksum and generates the signed join URL.
   ```json
   {
     "success": true,
-    "joinUrl": "http://localhost:5000/api/live/mock-classroom?meetingId=meet-f38a7b90&fullName=Student%20Learner&role=student&userId=student%40famehub.edu"
+    "joinUrl": "https://app.bbbserver.com/bbb-integration-v2/60a53a74-f9df-496a-9ae1-ca3079f26a7c/api/join?meetingID=meet-f38a7b90&fullName=Student%20Learner&password=ap123&userID=student%40famehub.edu&checksum=..."
   }
   ```
 
@@ -161,7 +161,7 @@ Retrieves list of published meeting video playbacks.
         "name": "Advanced Mathematics 101 - Lecture 1",
         "published": true,
         "startTime": "2026-06-17T12:00:00Z",
-        "playbackUrl": "https://demo.bigbluebutton.org/playback/presentation/2.3/playback.html?meetingId=class-math-101"
+        "playbackUrl": "https://app.bbbserver.com/playback/presentation/2.3/playback.html?meetingId=class-math-101"
       }
     ]
   }

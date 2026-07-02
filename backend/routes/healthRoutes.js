@@ -57,7 +57,7 @@ router.get('/', async (req, res) => {
     await BigBlueButtonService.getRecordings();
     status.services.bigbluebutton = 'UP';
   } catch (error) {
-    // If external BBB is not reachable, we log it, but do not necessarily fail healthcheck if in simulator/mock mode
+    // If external BBB is not reachable, we log it, but do not necessarily fail healthcheck
     status.services.bigbluebutton = 'DOWN (Unavailable)';
   }
 

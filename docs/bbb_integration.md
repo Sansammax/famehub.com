@@ -49,20 +49,13 @@ function buildUrl(callName, params, url, secret) {
 | `/getMeetingInfo` | `GET` | Fetches active attendee listings and recording stats. | `GET /api/live/info/:meetingId` |
 | `/getRecordings` | `GET` | Lists generated meeting record playbacks. | `GET /api/live/recordings` |
 
----
+## ⚙️ Production Integration Configuration
 
-## 🛠️ BigBlueButton HTML Simulator Mode
+The BigBlueButton integration connects directly to the official BigBlueButton API server.
 
-To enable developers to test the full event streaming workflow out-of-the-box (without requiring a dedicated public BBB server instance), the integration includes a built-in **Simulator Mode** (enabled via `isDemoMode = true` in `BigBlueButtonService.js`).
+### Environment Configuration:
+Configure the following keys in your `backend/.env` file:
+- `BBB_URL`: The official BigBlueButton API endpoint (e.g. `https://app.bbbserver.com/.../api`)
+- `BBB_SECRET`: The secret key/token provided by your BigBlueButton service provider
 
-### How the Simulator Operates:
-1. When a user creates or joins a meeting, `BigBlueButtonService.getJoinUrl(...)` returns a local Express redirect path:
-   `http://localhost:5000/api/live/mock-classroom?meetingId=meet-xxx&fullName=User&role=student`
-2. Navigating to this URL renders a custom dark-mode simulated video classroom in the browser.
-3. The panel displays:
-   - Micro/Cam controls.
-   - Interactive lists showing connected users.
-   - **Sim Join Button**: Triggers `POST /api/live/simulate-action` with student credentials. This publishes a real `Student Joined Class` event to Kafka, marking initial attendance logs.
-   - **Sim Leave Button**: Dispatches `Student Left Class` events, marking attendance durations.
-   - **Leave Classroom**: Terminates the active user's loop and redirects back to the LMS dashboard.
-4. Active dashboards and chart elements update automatically via WebSockets.
+Meetings created or joined inside the LMS will automatically open the real BigBlueButton room in a new browser tab for teachers (as Moderator) and students (as Viewer). Attendance and active participants are dynamically synchronized in the background via automated status polling.

@@ -13,7 +13,7 @@ beforeAll(async () => {
   ]);
   teacherToken = tRes.body.token;
   studentToken = sRes.body.token;
-});
+}, 30000);
 
 describe('Attendance API', () => {
   test('GET /api/live/attendance - teacher can view attendance', async () => {

@@ -19,55 +19,62 @@ let teacherId = '';
 let studentId = '';
 
 beforeAll(async () => {
-  await initDatabase();
+  try {
+    await initDatabase();
 
-  // Login to acquire tokens
-  const adminRes = await request(app).post('/api/auth/login').send({ email: 'admin@famehub.edu', password: 'password' });
-  adminToken = adminRes.body.token;
+    // Login to acquire tokens
+    const adminRes = await request(app).post('/api/auth/login').send({ email: 'admin@famehub.edu', password: 'password' });
+    adminToken = adminRes.body.token;
 
-  const teacherRes = await request(app).post('/api/auth/login').send({ email: 'teacher@famehub.edu', password: 'password' });
-  teacherToken = teacherRes.body.token;
+    const teacherRes = await request(app).post('/api/auth/login').send({ email: 'teacher@famehub.edu', password: 'password' });
+    teacherToken = teacherRes.body.token;
 
-  const studentRes = await request(app).post('/api/auth/login').send({ email: 'student@famehub.edu', password: 'password' });
-  studentToken = studentRes.body.token;
+    const studentRes = await request(app).post('/api/auth/login').send({ email: 'student@famehub.edu', password: 'password' });
+    studentToken = studentRes.body.token;
 
-  // Find a course
-  const course = await Course.findOne();
-  testCourseId = course ? course.id : 'a0000000-0000-0000-0000-000000000001';
+    // Find a course
+    const course = await Course.findOne();
+    testCourseId = course ? course.id : 'a0000000-0000-0000-0000-000000000001';
 
-  // Find seeded users
-  const teacherUser = await User.findOne({ where: { role: 'teacher' } });
-  const studentUser = await User.findOne({ where: { role: 'student' } });
-  teacherId = teacherUser ? teacherUser.id : 'a0000000-0000-0000-0000-000000000002';
-  studentId = studentUser ? studentUser.id : 'a0000000-0000-0000-0000-000000000003';
+    // Find seeded users
+    const teacherUser = await User.findOne({ where: { role: 'teacher' } });
+    const studentUser = await User.findOne({ where: { role: 'student' } });
+    teacherId = teacherUser ? teacherUser.id : 'a0000000-0000-0000-0000-000000000002';
+    studentId = studentUser ? studentUser.id : 'a0000000-0000-0000-0000-000000000003';
 
-  // Create test meeting
-  const meeting = await Meeting.create({
-    meetingId: testMeetingId,
-    name: 'Intro to Quantum Computing',
-    moderatorPW: 'mpw123',
-    attendeePW: 'apw123',
-    startedAt: new Date()
-  });
+    // Create test meeting
+    await Meeting.destroy({ where: { meetingId: testMeetingId } });
+    const meeting = await Meeting.create({
+      meetingId: testMeetingId,
+      name: 'Intro to Quantum Computing',
+      moderatorPW: 'mpw123',
+      attendeePW: 'apw123',
+      startedAt: new Date(),
+      courseId: testCourseId
+    });
 
-  // Create an assignment and submission to get a test submission ID
-  const assignment = await Assignment.create({
-    courseId: testCourseId,
-    teacherId: teacherId,
-    title: 'Quantum Mechanics Lab 1',
-    description: 'Explain superposition and entanglement.',
-    dueDate: new Date(Date.now() + 86400000),
-    maxMarks: 100
-  });
+    // Create an assignment and submission to get a test submission ID
+    const assignment = await Assignment.create({
+      courseId: testCourseId,
+      teacherId: teacherId,
+      title: 'Quantum Mechanics Lab 1',
+      description: 'Explain superposition and entanglement.',
+      dueDate: new Date(Date.now() + 86400000),
+      maxMarks: 100
+    });
 
-  const submission = await AssignmentSubmission.create({
-    assignmentId: assignment.id,
-    studentId: studentId,
-    status: 'pending',
-    submissionUrl: 'http://localhost/quantum.txt'
-  });
-  testSubmissionId = submission.id;
-});
+    const submission = await AssignmentSubmission.create({
+      assignmentId: assignment.id,
+      studentId: studentId,
+      status: 'pending',
+      submissionUrl: 'http://localhost/quantum.txt'
+    });
+    testSubmissionId = submission.id;
+  } catch (err) {
+    console.error('Setup failed with error:', err);
+    throw err;
+  }
+}, 30000);
 
 describe('AI Providers', () => {
   test('Active provider is switchable and returns mock/actual name', () => {
